@@ -7,6 +7,7 @@ import { errorHandler, notFound } from './middleware/error'
 // Routes
 import authRoutes        from './routes/auth'
 import projectsRoutes    from './routes/projects'
+import servicesRoutes    from './routes/services'
 import deploymentsRoutes from './routes/deployments'
 import envVarsRoutes     from './routes/envVars'
 
@@ -26,6 +27,7 @@ export function createApp() {
   // ── Routes ──────────────────────────────────────────────────────────────────
   app.use('/auth',        authRoutes)
   app.use('/projects',    projectsRoutes)
+  app.use('/services',    servicesRoutes)
   app.use('/deployments', deploymentsRoutes)
   app.use('/env',         envVarsRoutes)
 
