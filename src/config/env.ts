@@ -35,6 +35,7 @@ const envSchema = z.object({
 
   // Platform
   PLATFORM_DOMAIN: z.string().default('mitto.sh'),
+  DASHBOARD_URL: z.string().default('http://localhost:3001'),
   ENCRYPTION_KEY: z.string().min(32),
 })
 

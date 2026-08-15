@@ -5,7 +5,6 @@ import { users } from '../db/schema'
 import { eq } from 'drizzle-orm'
 import { generateToken, requireAuth, AuthRequest } from '../middleware/auth'
 import { env } from '../config/env'
-import { AppError } from '../middleware/error'
 import { asyncHandler } from '../lib/asyncHandler'
 
 const router = Router()
@@ -21,13 +20,21 @@ router.get('/github', (_req: Request, res: Response) => {
   res.redirect(`https://github.com/login/oauth/authorize?${params}`)
 })
 
+// Errors here happen mid-OAuth-dance, in the browser — a JSON body isn't
+// actionable for the user, so send them back to the dashboard's login page
+// with an error code it can display instead.
+function redirectToLoginError(res: Response, error: string) {
+  res.redirect(`${env.DASHBOARD_URL}/login?error=${error}`)
+}
+
 // ── GET /auth/github/callback ─────────────────────────────────────────────────
-// GitHub sends back a code — exchange for access token, upsert user, return JWT
+// GitHub sends back a code — exchange for access token, upsert user, then
+// redirect the browser back to the dashboard with a short-lived JWT.
 router.get('/github/callback', asyncHandler(async (req: Request, res: Response) => {
   const { code } = req.query
 
   if (!code || typeof code !== 'string') {
-    throw new AppError(400, 'Missing code from GitHub')
+    return redirectToLoginError(res, 'missing_code')
   }
 
   // Exchange code for GitHub access token
@@ -44,7 +51,7 @@ router.get('/github/callback', asyncHandler(async (req: Request, res: Response) 
   const tokenData = await tokenRes.json() as { access_token?: string; error?: string }
 
   if (!tokenData.access_token) {
-    throw new AppError(401, 'GitHub OAuth failed')
+    return redirectToLoginError(res, 'oauth_failed')
   }
 
   // Fetch GitHub user profile
@@ -67,7 +74,7 @@ router.get('/github/callback', asyncHandler(async (req: Request, res: Response) 
   const primaryEmail = emails.find((e) => e.primary && e.verified)?.email
 
   if (!primaryEmail) {
-    throw new AppError(400, 'No verified primary email found on GitHub account')
+    return redirectToLoginError(res, 'no_verified_email')
   }
 
   // Upsert user
@@ -91,7 +98,7 @@ router.get('/github/callback', asyncHandler(async (req: Request, res: Response) 
 
   const jwt = generateToken(user.id)
 
-  res.json({ token: jwt, user: { id: user.id, email: user.email, name: user.name, plan: user.plan } })
+  res.redirect(`${env.DASHBOARD_URL}/auth/callback?token=${jwt}`)
 }))
 
 // ── GET /auth/me ──────────────────────────────────────────────────────────────
