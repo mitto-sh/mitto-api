@@ -2,11 +2,12 @@ import { Router, Response } from 'express'
 import { z } from 'zod'
 import { db } from '../db'
 import { environmentVariables, services, projects } from '../db/schema'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { requireAuth, AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/error'
 import { encrypt, decrypt } from '../lib/crypto'
 import { param } from '../lib/params'
+import { asyncHandler } from '../lib/asyncHandler'
 
 const router = Router()
 
@@ -30,7 +31,7 @@ async function assertServiceOwner(serviceId: string, userId: string) {
 }
 
 // ── GET /env/:serviceId ───────────────────────────────────────────────────────
-router.get('/:serviceId', requireAuth, async (req: AuthRequest, res: Response) => {
+router.get('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const serviceId = param(req.params.serviceId)
   await assertServiceOwner(serviceId, req.user!.id)
 
@@ -44,11 +45,11 @@ router.get('/:serviceId', requireAuth, async (req: AuthRequest, res: Response) =
     ...v,
     value: v.isSecret ? '***' : decrypt(v.value),
   })))
-})
+}))
 
 // ── PUT /env/:serviceId ───────────────────────────────────────────────────────
 // Upsert env vars (bulk)
-router.put('/:serviceId', requireAuth, async (req: AuthRequest, res: Response) => {
+router.put('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const serviceId = param(req.params.serviceId)
   await assertServiceOwner(serviceId, req.user!.id)
 
@@ -66,15 +67,18 @@ router.put('/:serviceId', requireAuth, async (req: AuthRequest, res: Response) =
     .values(rows)
     .onConflictDoUpdate({
       target: [environmentVariables.serviceId, environmentVariables.key],
-      set: { value: environmentVariables.value, isSecret: environmentVariables.isSecret },
+      set: {
+        value: sql`excluded.value`,
+        isSecret: sql`excluded.is_secret`,
+      },
     })
     .returning()
 
   res.json(upserted.map((v) => ({ ...v, value: '***' })))
-})
+}))
 
 // ── DELETE /env/:serviceId/:key ───────────────────────────────────────────────
-router.delete('/:serviceId/:key', requireAuth, async (req: AuthRequest, res: Response) => {
+router.delete('/:serviceId/:key', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const serviceId = param(req.params.serviceId)
   const key = param(req.params.key)
   await assertServiceOwner(serviceId, req.user!.id)
@@ -89,6 +93,6 @@ router.delete('/:serviceId/:key', requireAuth, async (req: AuthRequest, res: Res
     )
 
   res.status(204).send()
-})
+}))
 
 export default router

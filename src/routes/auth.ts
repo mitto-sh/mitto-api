@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm'
 import { generateToken, requireAuth, AuthRequest } from '../middleware/auth'
 import { env } from '../config/env'
 import { AppError } from '../middleware/error'
+import { asyncHandler } from '../lib/asyncHandler'
 
 const router = Router()
 
@@ -22,7 +23,7 @@ router.get('/github', (_req: Request, res: Response) => {
 
 // ── GET /auth/github/callback ─────────────────────────────────────────────────
 // GitHub sends back a code — exchange for access token, upsert user, return JWT
-router.get('/github/callback', async (req: Request, res: Response) => {
+router.get('/github/callback', asyncHandler(async (req: Request, res: Response) => {
   const { code } = req.query
 
   if (!code || typeof code !== 'string') {
@@ -91,10 +92,10 @@ router.get('/github/callback', async (req: Request, res: Response) => {
   const jwt = generateToken(user.id)
 
   res.json({ token: jwt, user: { id: user.id, email: user.email, name: user.name, plan: user.plan } })
-})
+}))
 
 // ── GET /auth/me ──────────────────────────────────────────────────────────────
-router.get('/me', requireAuth, async (req: AuthRequest, res: Response) => {
+router.get('/me', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [user] = await db
     .select()
     .from(users)
@@ -102,6 +103,6 @@ router.get('/me', requireAuth, async (req: AuthRequest, res: Response) => {
     .limit(1)
 
   res.json(user)
-})
+}))
 
 export default router

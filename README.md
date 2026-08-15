@@ -18,8 +18,19 @@ Handles: projects, services, deployments, environment variables, custom domains,
 ## Getting Started
 ```bash
 cp .env.example .env
-docker compose up
+docker compose up -d postgres redis
+npm install
+npm run db:migrate
+npm run dev
 ```
+
+## Testing
+```bash
+npm test              # run once
+npm run test:watch    # watch mode
+npm run test:coverage # with coverage report — gated at 85% (lines/statements/functions/branches)
+```
+Tests run against the local Postgres/Redis from `docker compose up -d postgres redis` — no mocking of the database.
 
 ## Related Services
 - [mitto-build](../mitto-build) — builds Docker images

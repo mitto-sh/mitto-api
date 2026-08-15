@@ -6,6 +6,7 @@ import { eq, or, and } from 'drizzle-orm'
 import { requireAuth, AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/error'
 import { param } from '../lib/params'
+import { asyncHandler } from '../lib/asyncHandler'
 
 const router = Router()
 
@@ -25,17 +26,17 @@ function slugify(name: string): string {
 }
 
 // ── GET /projects ─────────────────────────────────────────────────────────────
-router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
+router.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userProjects = await db
     .select()
     .from(projects)
     .where(eq(projects.ownerId, req.user!.id))
 
   res.json(userProjects)
-})
+}))
 
 // ── POST /projects ────────────────────────────────────────────────────────────
-router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
+router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const body = createProjectSchema.parse(req.body)
 
   const slug = slugify(body.name)
@@ -68,10 +69,10 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
     .returning()
 
   res.status(201).json(project)
-})
+}))
 
 // ── GET /projects/:id ─────────────────────────────────────────────────────────
-router.get('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
+router.get('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [project] = await db
     .select()
     .from(projects)
@@ -87,10 +88,10 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     .where(eq(services.projectId, project.id))
 
   res.json({ ...project, services: projectServices })
-})
+}))
 
 // ── DELETE /projects/:id ──────────────────────────────────────────────────────
-router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
+router.delete('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [project] = await db
     .select()
     .from(projects)
@@ -103,6 +104,6 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
   await db.delete(projects).where(eq(projects.id, project.id))
 
   res.status(204).send()
-})
+}))
 
 export default router

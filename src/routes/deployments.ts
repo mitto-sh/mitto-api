@@ -7,6 +7,7 @@ import { requireAuth, AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/error'
 import { deployQueue } from '../queues/deploy'
 import { param } from '../lib/params'
+import { asyncHandler } from '../lib/asyncHandler'
 
 const router = Router()
 
@@ -17,7 +18,7 @@ const triggerDeploySchema = z.object({
 })
 
 // ── GET /deployments?serviceId=xxx ────────────────────────────────────────────
-router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
+router.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { serviceId } = req.query
 
   if (!serviceId || typeof serviceId !== 'string') {
@@ -32,11 +33,11 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
     .limit(20)
 
   res.json(rows)
-})
+}))
 
 // ── POST /deployments ─────────────────────────────────────────────────────────
 // Trigger a new deployment
-router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
+router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const body = triggerDeploySchema.parse(req.body)
 
   // Verify service belongs to user
@@ -76,10 +77,10 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
   })
 
   res.status(202).json(deployment)
-})
+}))
 
 // ── GET /deployments/:id ──────────────────────────────────────────────────────
-router.get('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
+router.get('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [deployment] = await db
     .select()
     .from(deployments)
@@ -89,10 +90,10 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
   if (!deployment) throw new AppError(404, 'Deployment not found')
 
   res.json(deployment)
-})
+}))
 
 // ── POST /deployments/:id/cancel ──────────────────────────────────────────────
-router.post('/:id/cancel', requireAuth, async (req: AuthRequest, res: Response) => {
+router.post('/:id/cancel', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [deployment] = await db
     .select()
     .from(deployments)
@@ -113,6 +114,6 @@ router.post('/:id/cancel', requireAuth, async (req: AuthRequest, res: Response) 
     .returning()
 
   res.json(updated)
-})
+}))
 
 export default router

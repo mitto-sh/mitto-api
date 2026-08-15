@@ -14,12 +14,13 @@ services:
 
   postgres:
     image: postgres:16-alpine
+    # host port 15432 (not 5432) to avoid clashing with a locally-installed Postgres
     environment:
       POSTGRES_USER:     mitto
       POSTGRES_PASSWORD: mitto
       POSTGRES_DB:       mitto
     ports:
-      - "5432:5432"
+      - "15432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
