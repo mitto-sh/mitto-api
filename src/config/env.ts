@@ -15,9 +15,16 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default('7d'),
 
-  // GitHub OAuth
+  // GitHub OAuth (login)
   GITHUB_CLIENT_ID: z.string(),
   GITHUB_CLIENT_SECRET: z.string(),
+
+  // GitHub App (org/repo connection — separate from the OAuth login above)
+  GITHUB_APP_ID: z.string().optional(),
+  GITHUB_APP_SLUG: z.string().optional(),
+  GITHUB_APP_CLIENT_ID: z.string().optional(),
+  GITHUB_APP_CLIENT_SECRET: z.string().optional(),
+  GITHUB_APP_PRIVATE_KEY_PATH: z.string().optional(),
 
   // GitLab OAuth (optional)
   GITLAB_CLIENT_ID: z.string().optional(),

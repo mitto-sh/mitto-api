@@ -27,9 +27,25 @@ export const users = pgTable('users', {
 })
 
 export const usersRelations = relations(users, ({ many }) => ({
-  orgMemberships: many(orgMembers),
-  projects:       many(projects),
-  deployments:    many(deployments),
+  orgMemberships:      many(orgMembers),
+  projects:            many(projects),
+  deployments:         many(deployments),
+  githubInstallations: many(githubInstallations),
+}))
+
+// ─── GITHUB APP INSTALLATIONS ─────────────────────────────────────────────────
+
+export const githubInstallations = pgTable('github_installations', {
+  id:             uuid('id').primaryKey().defaultRandom(),
+  userId:         uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  installationId: text('installation_id').notNull().unique(), // GitHub App installation ID
+  accountLogin:   text('account_login').notNull(),            // org or user the app was installed on
+  accountType:    text('account_type').notNull(),              // User | Organization
+  createdAt:      timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const githubInstallationsRelations = relations(githubInstallations, ({ one }) => ({
+  user: one(users, { fields: [githubInstallations.userId], references: [users.id] }),
 }))
 
 // ─── ORGANIZATIONS ────────────────────────────────────────────────────────────
@@ -232,3 +248,5 @@ export type NewEnvVar    = typeof environmentVariables.$inferInsert
 export type Domain       = typeof domains.$inferSelect
 export type Database     = typeof databases.$inferSelect
 export type LogStream    = typeof logStreams.$inferSelect
+export type GithubInstallation    = typeof githubInstallations.$inferSelect
+export type NewGithubInstallation = typeof githubInstallations.$inferInsert
