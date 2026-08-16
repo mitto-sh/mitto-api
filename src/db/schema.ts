@@ -83,18 +83,15 @@ export const orgMembersRelations = relations(orgMembers, ({ one }) => ({
 
 // ─── PROJECTS ─────────────────────────────────────────────────────────────────
 
+// A project is a pure grouping — a folder for related services. It doesn't
+// own a repo: each service picks its own source, since one logical project
+// often spans multiple repos (or none, for manually-configured services).
 export const projects = pgTable('projects', {
   id:            uuid('id').primaryKey().defaultRandom(),
   name:          text('name').notNull(),
   slug:          text('slug').notNull(),
   ownerId:       uuid('owner_id').references(() => users.id),
   orgId:         uuid('org_id').references(() => organizations.id),
-  repoUrl:       text('repo_url'),
-  repoProvider:  text('repo_provider'), // github | gitlab | bitbucket
-  defaultBranch: text('default_branch').notNull().default('main'),
-  buildCommand:  text('build_command'),
-  outputDir:     text('output_dir'),
-  runtime:       text('runtime'), // node | python | static | docker
   region:        text('region').notNull().default('us-east-1'),
   createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:     timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -123,6 +120,14 @@ export const services = pgTable('services', {
   maxReplicas:    integer('max_replicas').notNull().default(3),
   healthCheck:    text('health_check').default('/healthz'),
   dockerfilePath: text('dockerfile_path').default('Dockerfile'),
+  // Source — each service picks its own repo, independent of its siblings
+  repoUrl:       text('repo_url'),
+  repoProvider:  text('repo_provider'), // github | gitlab | bitbucket
+  defaultBranch: text('default_branch').notNull().default('main'),
+  buildCommand:  text('build_command'),
+  startCommand:  text('start_command'),
+  outputDir:     text('output_dir'),
+  runtime:       text('runtime'), // node | python | static | docker
   createdAt:      timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 

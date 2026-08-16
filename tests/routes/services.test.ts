@@ -73,6 +73,41 @@ describe('services routes', () => {
       .expect(404)
   })
 
+  it('creates a service with its own repo, independent of the project', async () => {
+    const { user: u, token } = await user()
+    const project = await createProject(u.id, token)
+
+    const res = await request(app)
+      .post('/services')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        projectId: project.id,
+        name: 'api',
+        type: 'web',
+        repoUrl: 'https://github.com/acme/api',
+        repoProvider: 'github',
+        defaultBranch: 'develop',
+        buildCommand: 'npm run build',
+        startCommand: 'npm start',
+        runtime: 'node',
+      })
+      .expect(201)
+
+    expect(res.body.repoUrl).toBe('https://github.com/acme/api')
+    expect(res.body.repoProvider).toBe('github')
+    expect(res.body.defaultBranch).toBe('develop')
+    expect(res.body.runtime).toBe('node')
+
+    // a second service under the SAME project can point at a different repo
+    const res2 = await request(app)
+      .post('/services')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ projectId: project.id, name: 'worker', type: 'worker', repoUrl: 'https://github.com/acme/worker' })
+      .expect(201)
+
+    expect(res2.body.repoUrl).toBe('https://github.com/acme/worker')
+  })
+
   it('rejects an invalid service type', async () => {
     const { user: u, token } = await user()
     const project = await createProject(u.id, token)

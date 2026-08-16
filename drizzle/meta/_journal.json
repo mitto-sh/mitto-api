@@ -15,6 +15,13 @@
       "when": 1786899620394,
       "tag": "0001_spooky_shiva",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786902295998,
+      "tag": "0002_unique_angel",
+      "breakpoints": true
     }
   ]
 }

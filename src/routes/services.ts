@@ -21,6 +21,14 @@ const createServiceSchema = z.object({
   maxReplicas:    z.number().int().min(1).default(3),
   healthCheck:    z.string().default('/healthz'),
   dockerfilePath: z.string().default('Dockerfile'),
+  // Source — optional, a service can also be created with no repo attached
+  repoUrl:        z.string().url().optional(),
+  repoProvider:   z.enum(['github', 'gitlab', 'bitbucket']).optional(),
+  defaultBranch:  z.string().default('main'),
+  buildCommand:   z.string().optional(),
+  startCommand:   z.string().optional(),
+  outputDir:      z.string().optional(),
+  runtime:        z.enum(['node', 'python', 'static', 'docker']).optional(),
 })
 
 async function assertProjectOwner(projectId: string, userId: string) {

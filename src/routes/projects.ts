@@ -10,14 +10,12 @@ import { asyncHandler } from '../lib/asyncHandler'
 
 const router = Router()
 
+// A project is a pure grouping — no repo here. Each service picks its own
+// source (see services.ts), since one project often spans multiple repos.
 const createProjectSchema = z.object({
-  name:          z.string().min(1).max(64),
-  repoUrl:       z.string().url().optional(),
-  repoProvider:  z.enum(['github', 'gitlab', 'bitbucket']).optional(),
-  defaultBranch: z.string().default('main'),
-  runtime:       z.enum(['node', 'python', 'static', 'docker']).optional(),
-  region:        z.string().default('us-east-1'),
-  orgId:         z.string().uuid().optional(),
+  name:   z.string().min(1).max(64),
+  region: z.string().default('us-east-1'),
+  orgId:  z.string().uuid().optional(),
 })
 
 // Slugify helper
