@@ -46,6 +46,8 @@ describe('projects routes', () => {
 
     expect(listRes.body).toHaveLength(1)
     expect(listRes.body[0].name).toBe('My Cool App')
+    expect(listRes.body[0].isPrivate).toBe(true)
+    expect(listRes.body[0].enabled).toBe(true)
   })
 
   it('rejects creating a duplicate slug for the same owner', async () => {
@@ -108,6 +110,144 @@ describe('projects routes', () => {
       .delete(`/projects/${created.body.id}`)
       .set('Authorization', `Bearer ${intruder.token}`)
       .expect(403)
+  })
+
+  it('renames a project and regenerates its slug', async () => {
+    const { token } = await user()
+    const created = await request(app)
+      .post('/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Old Name' })
+      .expect(201)
+
+    const updated = await request(app)
+      .patch(`/projects/${created.body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'New Name' })
+      .expect(200)
+
+    expect(updated.body.name).toBe('New Name')
+    expect(updated.body.slug).toBe('new-name')
+  })
+
+  it('rejects renaming into a slug already used by another project', async () => {
+    const { token } = await user()
+    await request(app)
+      .post('/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Taken Name' })
+      .expect(201)
+    const created = await request(app)
+      .post('/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Other Name' })
+      .expect(201)
+
+    await request(app)
+      .patch(`/projects/${created.body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Taken Name' })
+      .expect(409)
+  })
+
+  it('allows renaming a project to its own current name (no-op slug collision)', async () => {
+    const { token } = await user()
+    const created = await request(app)
+      .post('/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Same Name' })
+      .expect(201)
+
+    await request(app)
+      .patch(`/projects/${created.body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Same Name' })
+      .expect(200)
+  })
+
+  it('toggles isPrivate and enabled independently', async () => {
+    const { token } = await user()
+    const created = await request(app)
+      .post('/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Toggle App' })
+      .expect(201)
+
+    const updated = await request(app)
+      .patch(`/projects/${created.body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ isPrivate: false, enabled: false })
+      .expect(200)
+
+    expect(updated.body.isPrivate).toBe(false)
+    expect(updated.body.enabled).toBe(false)
+    expect(updated.body.name).toBe('Toggle App') // unchanged
+  })
+
+  it('returns the project unchanged when PATCH has no fields', async () => {
+    const { token } = await user()
+    const created = await request(app)
+      .post('/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Untouched App' })
+      .expect(201)
+
+    const res = await request(app)
+      .patch(`/projects/${created.body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({})
+      .expect(200)
+
+    expect(res.body.name).toBe('Untouched App')
+  })
+
+  it('returns 404/403 patching a project that does not exist or is not owned', async () => {
+    const owner = await user()
+    const intruder = await user()
+    const created = await request(app)
+      .post('/projects')
+      .set('Authorization', `Bearer ${owner.token}`)
+      .send({ name: 'Guarded App' })
+      .expect(201)
+
+    await request(app)
+      .patch('/projects/00000000-0000-0000-0000-000000000000')
+      .set('Authorization', `Bearer ${owner.token}`)
+      .send({ name: 'x' })
+      .expect(404)
+
+    await request(app)
+      .patch(`/projects/${created.body.id}`)
+      .set('Authorization', `Bearer ${intruder.token}`)
+      .send({ name: 'x' })
+      .expect(403)
+  })
+
+  it('blocks triggering a deployment when the project is disabled', async () => {
+    const { token } = await user()
+    const project = await request(app)
+      .post('/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Disabled App' })
+      .expect(201)
+
+    await request(app)
+      .patch(`/projects/${project.body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ enabled: false })
+      .expect(200)
+
+    const service = await request(app)
+      .post('/services')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ projectId: project.body.id, name: 'web', type: 'web' })
+      .expect(201)
+
+    await request(app)
+      .post('/deployments')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ serviceId: service.body.id })
+      .expect(423)
   })
 
   it('deletes a project it owns', async () => {

@@ -22,6 +22,13 @@
       "when": 1786902295998,
       "tag": "0002_unique_angel",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786926634130,
+      "tag": "0003_motionless_silver_samurai",
+      "breakpoints": true
     }
   ]
 }

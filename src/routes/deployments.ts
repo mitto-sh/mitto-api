@@ -56,6 +56,7 @@ router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Respons
     .limit(1)
 
   if (project?.ownerId !== req.user!.id) throw new AppError(403, 'Forbidden')
+  if (!project.enabled) throw new AppError(423, 'Project is disabled — enable it before deploying')
 
   // Create deployment record
   const [deployment] = await db

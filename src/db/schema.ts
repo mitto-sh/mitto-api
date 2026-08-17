@@ -93,6 +93,11 @@ export const projects = pgTable('projects', {
   ownerId:       uuid('owner_id').references(() => users.id),
   orgId:         uuid('org_id').references(() => organizations.id),
   region:        text('region').notNull().default('us-east-1'),
+  // Placeholder for future team/sharing features — not enforced anywhere yet.
+  isPrivate:     boolean('is_private').notNull().default(true),
+  // When false, blocks triggering new deployments for any service in this
+  // project (see POST /deployments). No real infra to actually pause yet.
+  enabled:       boolean('enabled').notNull().default(true),
   createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:     timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
