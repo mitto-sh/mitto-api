@@ -174,4 +174,57 @@ describe('services routes', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(404)
   })
+
+  it('defaults to enabled and can be disabled/re-enabled', async () => {
+    const { user: u, token } = await user()
+    const project = await createProject(u.id, token)
+
+    const created = await request(app)
+      .post('/services')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ projectId: project.id, name: 'web', type: 'web' })
+      .expect(201)
+    expect(created.body.enabled).toBe(true)
+
+    const disabled = await request(app)
+      .patch(`/services/${created.body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ enabled: false })
+      .expect(200)
+    expect(disabled.body.enabled).toBe(false)
+
+    const reenabled = await request(app)
+      .patch(`/services/${created.body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ enabled: true })
+      .expect(200)
+    expect(reenabled.body.enabled).toBe(true)
+  })
+
+  it('rejects updating a service owned by another user', async () => {
+    const owner = await user()
+    const intruder = await user()
+    const project = await createProject(owner.user.id, owner.token)
+
+    const created = await request(app)
+      .post('/services')
+      .set('Authorization', `Bearer ${owner.token}`)
+      .send({ projectId: project.id, name: 'web', type: 'web' })
+      .expect(201)
+
+    await request(app)
+      .patch(`/services/${created.body.id}`)
+      .set('Authorization', `Bearer ${intruder.token}`)
+      .send({ enabled: false })
+      .expect(403)
+  })
+
+  it('returns 404 updating a nonexistent service', async () => {
+    const { token } = await user()
+    await request(app)
+      .patch('/services/00000000-0000-0000-0000-000000000000')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ enabled: false })
+      .expect(404)
+  })
 })

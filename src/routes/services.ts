@@ -31,6 +31,10 @@ const createServiceSchema = z.object({
   runtime:        z.enum(['node', 'python', 'static', 'docker']).optional(),
 })
 
+const updateServiceSchema = z.object({
+  enabled: z.boolean().optional(),
+})
+
 async function assertProjectOwner(projectId: string, userId: string) {
   const [project] = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1)
   if (!project) throw new AppError(404, 'Project not found')
@@ -63,6 +67,24 @@ router.get('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Respo
   await assertProjectOwner(service.projectId, req.user!.id)
 
   res.json(service)
+}))
+
+// ── PATCH /services/:id ───────────────────────────────────────────────────────
+router.patch('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
+  const id = param(req.params.id)
+  const body = updateServiceSchema.parse(req.body)
+
+  const [service] = await db.select().from(services).where(eq(services.id, id)).limit(1)
+  if (!service) throw new AppError(404, 'Service not found')
+  await assertProjectOwner(service.projectId, req.user!.id)
+
+  const [updated] = await db
+    .update(services)
+    .set(body)
+    .where(eq(services.id, id))
+    .returning()
+
+  res.json(updated)
 }))
 
 // ── DELETE /services/:id ──────────────────────────────────────────────────────

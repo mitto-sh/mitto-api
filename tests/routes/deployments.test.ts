@@ -81,6 +81,21 @@ describe('deployments routes', () => {
       .expect(403)
   })
 
+  it('rejects triggering a deployment for a disabled service', async () => {
+    const { user: u, token } = await user()
+    const { service } = await setupProjectAndService(u.id)
+
+    await db.update(services).set({ enabled: false }).where(eq(services.id, service.id))
+
+    const res = await request(app)
+      .post('/deployments')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ serviceId: service.id })
+      .expect(423)
+
+    expect(res.body.error).toMatch(/disabled/i)
+  })
+
   it('returns 404 triggering a deployment for a nonexistent service', async () => {
     const { token } = await user()
     await request(app)

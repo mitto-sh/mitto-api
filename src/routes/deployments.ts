@@ -48,6 +48,7 @@ router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Respons
     .limit(1)
 
   if (!service) throw new AppError(404, 'Service not found')
+  if (!service.enabled) throw new AppError(423, 'Service is disabled — enable it before deploying')
 
   const [project] = await db
     .select()

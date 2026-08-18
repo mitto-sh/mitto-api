@@ -125,6 +125,10 @@ export const services = pgTable('services', {
   maxReplicas:    integer('max_replicas').notNull().default(3),
   healthCheck:    text('health_check').default('/healthz'),
   dockerfilePath: text('dockerfile_path').default('Dockerfile'),
+  // When false, blocks triggering new deployments for this service specifically
+  // (siblings in the same project are unaffected). No real infra to actually
+  // pause a running instance yet — this is the "safer than delete" alternative.
+  enabled:        boolean('enabled').notNull().default(true),
   // Source — each service picks its own repo, independent of its siblings
   repoUrl:       text('repo_url'),
   repoProvider:  text('repo_provider'), // github | gitlab | bitbucket
