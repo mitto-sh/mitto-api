@@ -20,17 +20,11 @@ const router = Router()
 
 const STATE_TTL = '10m'
 
-// ── GET /github/install-url ───────────────────────────────────────────────────
-// Returns a GitHub App installation URL with a short-lived state token that
-// correlates the callback back to the logged-in user.
 router.get('/install-url', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const state = jwt.sign({ sub: req.user!.id }, env.JWT_SECRET, { expiresIn: STATE_TTL })
   res.json({ url: `${installUrl()}?state=${state}` })
 }))
 
-// ── GET /github/app/callback ──────────────────────────────────────────────────
-// GitHub redirects the browser here after installation. No Authorization
-// header available — the state token (signed by us above) carries the user.
 router.get('/app/callback', asyncHandler(async (req: Request, res: Response) => {
   const { installation_id, state } = req.query
 
@@ -64,7 +58,6 @@ router.get('/app/callback', asyncHandler(async (req: Request, res: Response) => 
   res.redirect(`${env.DASHBOARD_URL}/projects?github_connected=1`)
 }))
 
-// ── GET /github/installations ─────────────────────────────────────────────────
 router.get('/installations', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const rows = await db
     .select()
@@ -85,7 +78,6 @@ async function assertInstallationOwner(installationId: string, userId: string) {
   return row
 }
 
-// ── GET /github/installations/:id/repos ───────────────────────────────────────
 router.get('/installations/:id/repos', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const installationId = param(req.params.id)
   await assertInstallationOwner(installationId, req.user!.id)
@@ -94,8 +86,6 @@ router.get('/installations/:id/repos', requireAuth, asyncHandler(async (req: Aut
   res.json(repos)
 }))
 
-// ── GET /github/installations/:id/repos/:owner/:repo/config ──────────────────
-// Fetches and parses mitto.yaml from the repo root, if present.
 router.get('/installations/:id/repos/:owner/:repo/config', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const installationId = param(req.params.id)
   await assertInstallationOwner(installationId, req.user!.id)

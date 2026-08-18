@@ -17,7 +17,6 @@ const triggerDeploySchema = z.object({
   commitMessage: z.string().optional(),
 })
 
-// ── GET /deployments?serviceId=xxx ────────────────────────────────────────────
 router.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const { serviceId } = req.query
 
@@ -35,12 +34,9 @@ router.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response
   res.json(rows)
 }))
 
-// ── POST /deployments ─────────────────────────────────────────────────────────
-// Trigger a new deployment
 router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const body = triggerDeploySchema.parse(req.body)
 
-  // Verify service belongs to user
   const [service] = await db
     .select()
     .from(services)
@@ -59,7 +55,6 @@ router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Respons
   if (project?.ownerId !== req.user!.id) throw new AppError(403, 'Forbidden')
   if (!project.enabled) throw new AppError(423, 'Project is disabled — enable it before deploying')
 
-  // Create deployment record
   const [deployment] = await db
     .insert(deployments)
     .values({
@@ -71,7 +66,6 @@ router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Respons
     })
     .returning()
 
-  // Enqueue build + deploy job
   await deployQueue.add('deploy', {
     deploymentId: deployment.id,
     serviceId:    service.id,
@@ -81,7 +75,6 @@ router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Respons
   res.status(202).json(deployment)
 }))
 
-// ── GET /deployments/:id ──────────────────────────────────────────────────────
 router.get('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [deployment] = await db
     .select()
@@ -94,7 +87,6 @@ router.get('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Respo
   res.json(deployment)
 }))
 
-// ── POST /deployments/:id/cancel ──────────────────────────────────────────────
 router.post('/:id/cancel', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [deployment] = await db
     .select()

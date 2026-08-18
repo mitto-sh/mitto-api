@@ -6,7 +6,6 @@ const IV_LENGTH = 12
 const TAG_LENGTH = 16
 const KEY_LENGTH = 32
 
-// Derive a 32-byte key from the ENCRYPTION_KEY env var
 const key = scryptSync(env.ENCRYPTION_KEY, 'mitto-salt', KEY_LENGTH)
 
 export function encrypt(plaintext: string): string {
@@ -20,7 +19,6 @@ export function encrypt(plaintext: string): string {
 
   const tag = cipher.getAuthTag()
 
-  // Format: iv:tag:ciphertext (all hex)
   return `${iv.toString('hex')}:${tag.toString('hex')}:${encrypted.toString('hex')}`
 }
 

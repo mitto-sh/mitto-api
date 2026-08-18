@@ -9,8 +9,6 @@ import { asyncHandler } from '../lib/asyncHandler'
 
 const router = Router()
 
-// ── GET /auth/github ──────────────────────────────────────────────────────────
-// Redirect to GitHub OAuth
 router.get('/github', (_req: Request, res: Response) => {
   const params = new URLSearchParams({
     client_id:    env.GITHUB_CLIENT_ID,
@@ -20,16 +18,10 @@ router.get('/github', (_req: Request, res: Response) => {
   res.redirect(`https://github.com/login/oauth/authorize?${params}`)
 })
 
-// Errors here happen mid-OAuth-dance, in the browser — a JSON body isn't
-// actionable for the user, so send them back to the dashboard's login page
-// with an error code it can display instead.
 function redirectToLoginError(res: Response, error: string) {
   res.redirect(`${env.DASHBOARD_URL}/login?error=${error}`)
 }
 
-// ── GET /auth/github/callback ─────────────────────────────────────────────────
-// GitHub sends back a code — exchange for access token, upsert user, then
-// redirect the browser back to the dashboard with a short-lived JWT.
 router.get('/github/callback', asyncHandler(async (req: Request, res: Response) => {
   const { code } = req.query
 
@@ -37,7 +29,6 @@ router.get('/github/callback', asyncHandler(async (req: Request, res: Response) 
     return redirectToLoginError(res, 'missing_code')
   }
 
-  // Exchange code for GitHub access token
   const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -54,7 +45,6 @@ router.get('/github/callback', asyncHandler(async (req: Request, res: Response) 
     return redirectToLoginError(res, 'oauth_failed')
   }
 
-  // Fetch GitHub user profile
   const [profileRes, emailsRes] = await Promise.all([
     fetch('https://api.github.com/user', {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
@@ -77,7 +67,6 @@ router.get('/github/callback', asyncHandler(async (req: Request, res: Response) 
     return redirectToLoginError(res, 'no_verified_email')
   }
 
-  // Upsert user
   const [user] = await db
     .insert(users)
     .values({
@@ -101,7 +90,6 @@ router.get('/github/callback', asyncHandler(async (req: Request, res: Response) 
   res.redirect(`${env.DASHBOARD_URL}/auth/callback?token=${jwt}`)
 }))
 
-// ── GET /auth/me ──────────────────────────────────────────────────────────────
 router.get('/me', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [user] = await db
     .select()

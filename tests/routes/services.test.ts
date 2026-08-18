@@ -98,7 +98,6 @@ describe('services routes', () => {
     expect(res.body.defaultBranch).toBe('develop')
     expect(res.body.runtime).toBe('node')
 
-    // a second service under the SAME project can point at a different repo
     const res2 = await request(app)
       .post('/services')
       .set('Authorization', `Bearer ${token}`)

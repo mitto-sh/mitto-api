@@ -5,42 +5,33 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(3000),
 
-  // Database
   DATABASE_URL: z.string().url(),
 
-  // Redis / Queue
   REDIS_URL: z.string().default('redis://localhost:6379'),
 
-  // Auth
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default('7d'),
 
-  // GitHub OAuth (login)
   GITHUB_CLIENT_ID: z.string(),
   GITHUB_CLIENT_SECRET: z.string(),
 
-  // GitHub App (org/repo connection — separate from the OAuth login above)
   GITHUB_APP_ID: z.string().optional(),
   GITHUB_APP_SLUG: z.string().optional(),
   GITHUB_APP_CLIENT_ID: z.string().optional(),
   GITHUB_APP_CLIENT_SECRET: z.string().optional(),
   GITHUB_APP_PRIVATE_KEY_PATH: z.string().optional(),
 
-  // GitLab OAuth (optional)
   GITLAB_CLIENT_ID: z.string().optional(),
   GITLAB_CLIENT_SECRET: z.string().optional(),
 
-  // AWS
   AWS_REGION: z.string().default('us-east-1'),
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
   ECR_REGISTRY: z.string().optional(),
 
-  // Terraform Cloud
   TF_CLOUD_TOKEN: z.string().optional(),
   TF_CLOUD_ORG: z.string().optional(),
 
-  // Platform
   PLATFORM_DOMAIN: z.string().default('mitto.sh'),
   DASHBOARD_URL: z.string().default('http://localhost:3001'),
   ENCRYPTION_KEY: z.string().min(32),

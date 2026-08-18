@@ -19,7 +19,6 @@ const upsertEnvVarSchema = z.object({
   })).min(1),
 })
 
-// Verify service ownership helper
 async function assertServiceOwner(serviceId: string, userId: string) {
   const [service] = await db.select().from(services).where(eq(services.id, serviceId)).limit(1)
   if (!service) throw new AppError(404, 'Service not found')
@@ -30,7 +29,6 @@ async function assertServiceOwner(serviceId: string, userId: string) {
   return service
 }
 
-// ── GET /env/:serviceId ───────────────────────────────────────────────────────
 router.get('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const serviceId = param(req.params.serviceId)
   await assertServiceOwner(serviceId, req.user!.id)
@@ -40,15 +38,12 @@ router.get('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res
     .from(environmentVariables)
     .where(eq(environmentVariables.serviceId, serviceId))
 
-  // Return decrypted values (masked for secrets in future)
   res.json(vars.map((v) => ({
     ...v,
     value: v.isSecret ? '***' : decrypt(v.value),
   })))
 }))
 
-// ── PUT /env/:serviceId ───────────────────────────────────────────────────────
-// Upsert env vars (bulk)
 router.put('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const serviceId = param(req.params.serviceId)
   await assertServiceOwner(serviceId, req.user!.id)
@@ -77,7 +72,6 @@ router.put('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res
   res.json(upserted.map((v) => ({ ...v, value: '***' })))
 }))
 
-// ── DELETE /env/:serviceId/:key ───────────────────────────────────────────────
 router.delete('/:serviceId/:key', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const serviceId = param(req.params.serviceId)
   const key = param(req.params.key)

@@ -38,8 +38,6 @@ export function installUrl(): string {
   return `https://github.com/apps/${slug}/installations/new`
 }
 
-// Short-lived (max 10 min) JWT the App uses to authenticate as itself, per
-// https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app
 function signAppJwt(): string {
   const { appId, privateKey } = getGithubAppConfig()
   const now = Math.floor(Date.now() / 1000)
@@ -117,7 +115,6 @@ export async function listInstallationRepos(installationId: string): Promise<Git
   return repos
 }
 
-// Returns the decoded text content of a file at the repo root, or null if it doesn't exist.
 export async function fetchRepoFile(installationId: string, owner: string, repo: string, path: string): Promise<string | null> {
   const token = await getInstallationAccessToken(installationId)
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {

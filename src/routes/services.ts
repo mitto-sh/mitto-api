@@ -21,7 +21,6 @@ const createServiceSchema = z.object({
   maxReplicas:    z.number().int().min(1).default(3),
   healthCheck:    z.string().default('/healthz'),
   dockerfilePath: z.string().default('Dockerfile'),
-  // Source — optional, a service can also be created with no repo attached
   repoUrl:        z.string().url().optional(),
   repoProvider:   z.enum(['github', 'gitlab', 'bitbucket']).optional(),
   defaultBranch:  z.string().default('main'),
@@ -42,7 +41,6 @@ async function assertProjectOwner(projectId: string, userId: string) {
   return project
 }
 
-// ── POST /services ────────────────────────────────────────────────────────────
 router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const body = createServiceSchema.parse(req.body)
   await assertProjectOwner(body.projectId, req.user!.id)
@@ -55,7 +53,6 @@ router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Respons
   res.status(201).json(service)
 }))
 
-// ── GET /services/:id ─────────────────────────────────────────────────────────
 router.get('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [service] = await db
     .select()
@@ -69,7 +66,6 @@ router.get('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Respo
   res.json(service)
 }))
 
-// ── PATCH /services/:id ───────────────────────────────────────────────────────
 router.patch('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const id = param(req.params.id)
   const body = updateServiceSchema.parse(req.body)
@@ -87,7 +83,6 @@ router.patch('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Res
   res.json(updated)
 }))
 
-// ── DELETE /services/:id ──────────────────────────────────────────────────────
 router.delete('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [service] = await db
     .select()

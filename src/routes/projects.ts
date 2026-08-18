@@ -10,22 +10,18 @@ import { asyncHandler } from '../lib/asyncHandler'
 
 const router = Router()
 
-// A project is a pure grouping — no repo here. Each service picks its own
-// source (see services.ts), since one project often spans multiple repos.
 const createProjectSchema = z.object({
   name:   z.string().min(1).max(64),
   region: z.string().default('us-east-1'),
   orgId:  z.string().uuid().optional(),
 })
 
-// Renaming regenerates the slug — see mitto-docs/docs/decisions.md for why.
 const updateProjectSchema = z.object({
   name:      z.string().min(1).max(64).optional(),
   isPrivate: z.boolean().optional(),
   enabled:   z.boolean().optional(),
 })
 
-// Slugify helper
 function slugify(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 }
@@ -47,7 +43,6 @@ async function assertSlugAvailable(slug: string, orgId: string | null, ownerId: 
   }
 }
 
-// ── GET /projects ─────────────────────────────────────────────────────────────
 router.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userProjects = await db
     .select()
@@ -57,7 +52,6 @@ router.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response
   res.json(userProjects)
 }))
 
-// ── POST /projects ────────────────────────────────────────────────────────────
 router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const body = createProjectSchema.parse(req.body)
 
@@ -76,7 +70,6 @@ router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Respons
   res.status(201).json(project)
 }))
 
-// ── GET /projects/:id ─────────────────────────────────────────────────────────
 router.get('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [project] = await db
     .select()
@@ -95,7 +88,6 @@ router.get('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Respo
   res.json({ ...project, services: projectServices })
 }))
 
-// ── PATCH /projects/:id ───────────────────────────────────────────────────────
 router.patch('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [project] = await db
     .select()
@@ -131,7 +123,6 @@ router.patch('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Res
   res.json(updated)
 }))
 
-// ── DELETE /projects/:id ──────────────────────────────────────────────────────
 router.delete('/:id', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const [project] = await db
     .select()
