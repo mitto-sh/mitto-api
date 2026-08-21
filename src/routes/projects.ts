@@ -1,7 +1,7 @@
 import { Router, Response } from 'express'
 import { z } from 'zod'
 import { db } from '../db'
-import { projects, services } from '../db/schema'
+import { projects, services, environments } from '../db/schema'
 import { eq, or, and } from 'drizzle-orm'
 import { requireAuth, AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/error'
@@ -58,14 +58,23 @@ router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Respons
   const slug = slugify(body.name)
   await assertSlugAvailable(slug, body.orgId ?? null, req.user!.id)
 
-  const [project] = await db
-    .insert(projects)
-    .values({
-      ...body,
-      slug,
-      ownerId: req.user!.id,
-    })
-    .returning()
+  const project = await db.transaction(async (tx) => {
+    const [project] = await tx
+      .insert(projects)
+      .values({
+        ...body,
+        slug,
+        ownerId: req.user!.id,
+      })
+      .returning()
+
+    await tx.insert(environments).values([
+      { projectId: project.id, name: 'Production',  slug: 'production',  isDefault: true },
+      { projectId: project.id, name: 'Development', slug: 'development', isDefault: false },
+    ])
+
+    return project
+  })
 
   res.status(201).json(project)
 }))

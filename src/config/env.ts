@@ -3,11 +3,11 @@ import 'dotenv/config'
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.coerce.number().default(3000),
+  PORT: z.coerce.number().default(4000),
 
   DATABASE_URL: z.string().url(),
 
-  REDIS_URL: z.string().default('redis://localhost:6379'),
+  REDIS_URL: z.string().default('redis://localhost:4003'),
 
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default('7d'),
@@ -33,7 +33,7 @@ const envSchema = z.object({
   TF_CLOUD_ORG: z.string().optional(),
 
   PLATFORM_DOMAIN: z.string().default('mitto.sh'),
-  DASHBOARD_URL: z.string().default('http://localhost:3001'),
+  DASHBOARD_URL: z.string().default('http://localhost:4001'),
   ENCRYPTION_KEY: z.string().min(32),
 })
 

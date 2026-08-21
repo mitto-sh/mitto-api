@@ -89,10 +89,11 @@ export const projects = pgTable('projects', {
 }))
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
-  owner:     one(users,         { fields: [projects.ownerId], references: [users.id] }),
-  org:       one(organizations, { fields: [projects.orgId],   references: [organizations.id] }),
-  services:  many(services),
-  databases: many(databases),
+  owner:        one(users,         { fields: [projects.ownerId], references: [users.id] }),
+  org:          one(organizations, { fields: [projects.orgId],   references: [organizations.id] }),
+  services:     many(services),
+  databases:    many(databases),
+  environments: many(environments),
 }))
 
 export const services = pgTable('services', {
@@ -126,9 +127,27 @@ export const servicesRelations = relations(services, ({ one, many }) => ({
   logStreams:  many(logStreams),
 }))
 
+export const environments = pgTable('environments', {
+  id:        uuid('id').primaryKey().defaultRandom(),
+  projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  name:      text('name').notNull(),
+  slug:      text('slug').notNull(),
+  isDefault: boolean('is_default').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  projectSlugUniq: uniqueIndex('environments_project_slug_idx').on(t.projectId, t.slug),
+}))
+
+export const environmentsRelations = relations(environments, ({ one, many }) => ({
+  project:     one(projects, { fields: [environments.projectId], references: [projects.id] }),
+  envVars:     many(environmentVariables),
+  deployments: many(deployments),
+}))
+
 export const deployments = pgTable('deployments', {
   id:            uuid('id').primaryKey().defaultRandom(),
   serviceId:     uuid('service_id').notNull().references(() => services.id, { onDelete: 'cascade' }),
+  environmentId: uuid('environment_id').notNull().references(() => environments.id, { onDelete: 'cascade' }),
   status:        text('status').notNull().default('queued'),
   commitSha:     text('commit_sha'),
   commitMessage: text('commit_message'),
@@ -146,24 +165,27 @@ export const deployments = pgTable('deployments', {
 }))
 
 export const deploymentsRelations = relations(deployments, ({ one, many }) => ({
-  service:    one(services, { fields: [deployments.serviceId],   references: [services.id] }),
+  service:     one(services,     { fields: [deployments.serviceId],     references: [services.id] }),
+  environment: one(environments, { fields: [deployments.environmentId], references: [environments.id] }),
   triggeredBy: one(users,  { fields: [deployments.triggeredBy], references: [users.id] }),
   logStreams:  many(logStreams),
 }))
 
 export const environmentVariables = pgTable('environment_variables', {
-  id:        uuid('id').primaryKey().defaultRandom(),
-  serviceId: uuid('service_id').notNull().references(() => services.id, { onDelete: 'cascade' }),
-  key:       text('key').notNull(),
-  value:     text('value').notNull(),
-  isSecret:  boolean('is_secret').notNull().default(true),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  id:            uuid('id').primaryKey().defaultRandom(),
+  serviceId:     uuid('service_id').notNull().references(() => services.id, { onDelete: 'cascade' }),
+  environmentId: uuid('environment_id').notNull().references(() => environments.id, { onDelete: 'cascade' }),
+  key:           text('key').notNull(),
+  value:         text('value').notNull(),
+  isSecret:      boolean('is_secret').notNull().default(true),
+  createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
-  serviceKeyUniq: uniqueIndex('env_vars_service_key_idx').on(t.serviceId, t.key),
+  serviceEnvKeyUniq: uniqueIndex('env_vars_service_env_key_idx').on(t.serviceId, t.environmentId, t.key),
 }))
 
 export const environmentVariablesRelations = relations(environmentVariables, ({ one }) => ({
-  service: one(services, { fields: [environmentVariables.serviceId], references: [services.id] }),
+  service:     one(services,     { fields: [environmentVariables.serviceId],     references: [services.id] }),
+  environment: one(environments, { fields: [environmentVariables.environmentId], references: [environments.id] }),
 }))
 
 export const domains = pgTable('domains', {
@@ -224,6 +246,8 @@ export type Deployment   = typeof deployments.$inferSelect
 export type NewDeployment = typeof deployments.$inferInsert
 export type EnvVar       = typeof environmentVariables.$inferSelect
 export type NewEnvVar    = typeof environmentVariables.$inferInsert
+export type Environment    = typeof environments.$inferSelect
+export type NewEnvironment = typeof environments.$inferInsert
 export type Domain       = typeof domains.$inferSelect
 export type Database     = typeof databases.$inferSelect
 export type LogStream    = typeof logStreams.$inferSelect

@@ -2,7 +2,7 @@ import { Router, Response } from 'express'
 import { z } from 'zod'
 import { db } from '../db'
 import { deployments, services, projects } from '../db/schema'
-import { eq, desc } from 'drizzle-orm'
+import { eq, and, desc } from 'drizzle-orm'
 import { requireAuth, AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/error'
 import { deployQueue } from '../queues/deploy'
@@ -13,12 +13,13 @@ const router = Router()
 
 const triggerDeploySchema = z.object({
   serviceId:     z.string().uuid(),
+  environmentId: z.string().uuid(),
   commitSha:     z.string().optional(),
   commitMessage: z.string().optional(),
 })
 
 router.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { serviceId } = req.query
+  const { serviceId, environmentId } = req.query
 
   if (!serviceId || typeof serviceId !== 'string') {
     throw new AppError(400, 'serviceId query param is required')
@@ -27,7 +28,11 @@ router.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response
   const rows = await db
     .select()
     .from(deployments)
-    .where(eq(deployments.serviceId, serviceId))
+    .where(
+      environmentId && typeof environmentId === 'string'
+        ? and(eq(deployments.serviceId, serviceId), eq(deployments.environmentId, environmentId))
+        : eq(deployments.serviceId, serviceId),
+    )
     .orderBy(desc(deployments.createdAt))
     .limit(20)
 
@@ -59,6 +64,7 @@ router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Respons
     .insert(deployments)
     .values({
       serviceId:     body.serviceId,
+      environmentId: body.environmentId,
       status:        'queued',
       commitSha:     body.commitSha,
       commitMessage: body.commitMessage,
@@ -67,9 +73,10 @@ router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Respons
     .returning()
 
   await deployQueue.add('deploy', {
-    deploymentId: deployment.id,
-    serviceId:    service.id,
-    projectId:    project.id,
+    deploymentId:  deployment.id,
+    serviceId:     service.id,
+    projectId:     project.id,
+    environmentId: body.environmentId,
   })
 
   res.status(202).json(deployment)

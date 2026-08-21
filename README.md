@@ -6,8 +6,9 @@ Handles: projects, services, deployments, environment variables, custom domains,
 
 ## Responsibilities
 - Project and service CRUD
-- Deployment lifecycle management
-- Environment variable management (encrypted at rest)
+- Per-project environments (production/dev + custom, auto-seeded on project creation)
+- Deployment lifecycle management, scoped per environment
+- Environment variable management (encrypted at rest, scoped per environment)
 - Custom domain + SSL provisioning
 - Billing and usage tracking
 - Auth (JWT + GitHub/GitLab OAuth)

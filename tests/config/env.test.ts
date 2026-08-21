@@ -27,8 +27,8 @@ describe('env config', () => {
     const { env } = await import('../../src/config/env')
 
     expect(env.NODE_ENV).toBe('test')
-    expect(env.PORT).toBe(3000)
-    expect(env.REDIS_URL).toBe('redis://localhost:6379')
+    expect(env.PORT).toBe(4000)
+    expect(env.REDIS_URL).toBe('redis://localhost:4003')
     expect(env.PLATFORM_DOMAIN).toBe('mitto.sh')
   })
 

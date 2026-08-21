@@ -3,7 +3,7 @@ import request from 'supertest'
 import { eq } from 'drizzle-orm'
 import { createApp } from '../../src/app'
 import { db } from '../../src/db'
-import { users, projects, services } from '../../src/db/schema'
+import { users, projects, services, environments } from '../../src/db/schema'
 import { createTestUser } from '../helpers/testUser'
 import { deployQueue } from '../../src/queues/deploy'
 
@@ -20,7 +20,12 @@ async function setupProjectAndService(ownerId: string) {
     .values({ projectId: project!.id, name: 'web', type: 'web', port: 3000 })
     .returning()
 
-  return { project: project!, service: service! }
+  const [environment] = await db
+    .insert(environments)
+    .values({ projectId: project!.id, name: 'Production', slug: 'production', isDefault: true })
+    .returning()
+
+  return { project: project!, service: service!, environment: environment! }
 }
 
 describe('deployments routes', () => {
@@ -50,12 +55,12 @@ describe('deployments routes', () => {
 
   it('triggers a deployment, enqueues a job, and lists it', async () => {
     const { user: u, token } = await user()
-    const { service } = await setupProjectAndService(u.id)
+    const { service, environment } = await setupProjectAndService(u.id)
 
     const triggerRes = await request(app)
       .post('/deployments')
       .set('Authorization', `Bearer ${token}`)
-      .send({ serviceId: service.id, commitSha: 'abc123', commitMessage: 'test commit' })
+      .send({ serviceId: service.id, environmentId: environment.id, commitSha: 'abc123', commitMessage: 'test commit' })
       .expect(202)
 
     expect(triggerRes.body.status).toBe('queued')
@@ -72,25 +77,25 @@ describe('deployments routes', () => {
   it('rejects triggering a deployment for a service owned by another user', async () => {
     const owner = await user()
     const intruder = await user()
-    const { service } = await setupProjectAndService(owner.user.id)
+    const { service, environment } = await setupProjectAndService(owner.user.id)
 
     await request(app)
       .post('/deployments')
       .set('Authorization', `Bearer ${intruder.token}`)
-      .send({ serviceId: service.id })
+      .send({ serviceId: service.id, environmentId: environment.id })
       .expect(403)
   })
 
   it('rejects triggering a deployment for a disabled service', async () => {
     const { user: u, token } = await user()
-    const { service } = await setupProjectAndService(u.id)
+    const { service, environment } = await setupProjectAndService(u.id)
 
     await db.update(services).set({ enabled: false }).where(eq(services.id, service.id))
 
     const res = await request(app)
       .post('/deployments')
       .set('Authorization', `Bearer ${token}`)
-      .send({ serviceId: service.id })
+      .send({ serviceId: service.id, environmentId: environment.id })
       .expect(423)
 
     expect(res.body.error).toMatch(/disabled/i)
@@ -101,18 +106,18 @@ describe('deployments routes', () => {
     await request(app)
       .post('/deployments')
       .set('Authorization', `Bearer ${token}`)
-      .send({ serviceId: '00000000-0000-0000-0000-000000000000' })
+      .send({ serviceId: '00000000-0000-0000-0000-000000000000', environmentId: '00000000-0000-0000-0000-000000000000' })
       .expect(404)
   })
 
   it('gets a deployment by id and cancels it', async () => {
     const { user: u, token } = await user()
-    const { service } = await setupProjectAndService(u.id)
+    const { service, environment } = await setupProjectAndService(u.id)
 
     const triggerRes = await request(app)
       .post('/deployments')
       .set('Authorization', `Bearer ${token}`)
-      .send({ serviceId: service.id })
+      .send({ serviceId: service.id, environmentId: environment.id })
       .expect(202)
 
     const getRes = await request(app)
@@ -138,12 +143,12 @@ describe('deployments routes', () => {
 
   it('rejects canceling a deployment that already finished', async () => {
     const { user: u, token } = await user()
-    const { service } = await setupProjectAndService(u.id)
+    const { service, environment } = await setupProjectAndService(u.id)
 
     const triggerRes = await request(app)
       .post('/deployments')
       .set('Authorization', `Bearer ${token}`)
-      .send({ serviceId: service.id })
+      .send({ serviceId: service.id, environmentId: environment.id })
       .expect(202)
 
     await request(app)

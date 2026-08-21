@@ -12,6 +12,7 @@ import { asyncHandler } from '../lib/asyncHandler'
 const router = Router()
 
 const upsertEnvVarSchema = z.object({
+  environmentId: z.string().uuid(),
   vars: z.array(z.object({
     key:      z.string().min(1).regex(/^[A-Z_][A-Z0-9_]*$/, 'Key must be uppercase with underscores'),
     value:    z.string(),
@@ -31,12 +32,23 @@ async function assertServiceOwner(serviceId: string, userId: string) {
 
 router.get('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const serviceId = param(req.params.serviceId)
+  const { environmentId } = req.query
+
+  if (!environmentId || typeof environmentId !== 'string') {
+    throw new AppError(400, 'environmentId query param is required')
+  }
+
   await assertServiceOwner(serviceId, req.user!.id)
 
   const vars = await db
     .select()
     .from(environmentVariables)
-    .where(eq(environmentVariables.serviceId, serviceId))
+    .where(
+      and(
+        eq(environmentVariables.serviceId, serviceId),
+        eq(environmentVariables.environmentId, environmentId),
+      ),
+    )
 
   res.json(vars.map((v) => ({
     ...v,
@@ -48,10 +60,11 @@ router.put('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res
   const serviceId = param(req.params.serviceId)
   await assertServiceOwner(serviceId, req.user!.id)
 
-  const { vars } = upsertEnvVarSchema.parse(req.body)
+  const { environmentId, vars } = upsertEnvVarSchema.parse(req.body)
 
   const rows = vars.map((v) => ({
     serviceId,
+    environmentId,
     key:       v.key,
     value:     encrypt(v.value),
     isSecret:  v.isSecret,
@@ -61,7 +74,7 @@ router.put('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res
     .insert(environmentVariables)
     .values(rows)
     .onConflictDoUpdate({
-      target: [environmentVariables.serviceId, environmentVariables.key],
+      target: [environmentVariables.serviceId, environmentVariables.environmentId, environmentVariables.key],
       set: {
         value: sql`excluded.value`,
         isSecret: sql`excluded.is_secret`,
@@ -75,6 +88,12 @@ router.put('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res
 router.delete('/:serviceId/:key', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const serviceId = param(req.params.serviceId)
   const key = param(req.params.key)
+  const { environmentId } = req.query
+
+  if (!environmentId || typeof environmentId !== 'string') {
+    throw new AppError(400, 'environmentId query param is required')
+  }
+
   await assertServiceOwner(serviceId, req.user!.id)
 
   await db
@@ -82,6 +101,7 @@ router.delete('/:serviceId/:key', requireAuth, asyncHandler(async (req: AuthRequ
     .where(
       and(
         eq(environmentVariables.serviceId, serviceId),
+        eq(environmentVariables.environmentId, environmentId),
         eq(environmentVariables.key, key),
       ),
     )

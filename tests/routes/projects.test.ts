@@ -243,10 +243,15 @@ describe('projects routes', () => {
       .send({ projectId: project.body.id, name: 'web', type: 'web' })
       .expect(201)
 
+    const envs = await request(app)
+      .get(`/environments?projectId=${project.body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+
     await request(app)
       .post('/deployments')
       .set('Authorization', `Bearer ${token}`)
-      .send({ serviceId: service.body.id })
+      .send({ serviceId: service.body.id, environmentId: envs.body[0].id })
       .expect(423)
   })
 

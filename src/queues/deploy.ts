@@ -2,9 +2,10 @@ import { Queue } from 'bullmq'
 import { env } from '../config/env'
 
 export interface DeployJobData {
-  deploymentId: string
-  serviceId:    string
-  projectId:    string
+  deploymentId:  string
+  serviceId:     string
+  projectId:     string
+  environmentId: string
 }
 
 export const deployQueue = new Queue<DeployJobData>('deployments', {
