@@ -7,13 +7,12 @@ import {
   listInstallationRepos,
   fetchRepoFile,
 } from '../lib/githubApp'
-import { parseMittoConfig, MITTO_CONFIG_FILENAME } from '../lib/mittoConfig'
+import { parseMittoConfig } from '../lib/mittoConfig'
+import { MITTO_CONFIG_FILENAME, GITHUB_INSTALL_STATE_TTL } from '../lib/consts'
 import * as githubInstallationsRepo from '../repositories/githubInstallations.repository'
 
-const STATE_TTL = '10m'
-
 export function getInstallUrl(userId: string): string {
-  const state = jwt.sign({ sub: userId }, env.JWT_SECRET, { expiresIn: STATE_TTL })
+  const state = jwt.sign({ sub: userId }, env.JWT_SECRET, { expiresIn: GITHUB_INSTALL_STATE_TTL })
   return `${installUrl()}?state=${state}`
 }
 

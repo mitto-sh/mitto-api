@@ -1,8 +1,6 @@
 import { parse as parseYaml } from 'yaml'
 import { z } from 'zod'
 
-export const MITTO_CONFIG_FILENAME = 'mitto.yaml'
-
 const mittoServiceSchema = z.object({
   name:           z.string().min(1).max(64),
   type:           z.enum(['web', 'worker', 'cron', 'static']),
