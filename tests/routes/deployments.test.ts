@@ -131,6 +131,33 @@ describe('deployments routes', () => {
     expect(cancelRes.body.status).toBe('cancelled')
   })
 
+  it('rejects listing, getting, and canceling deployments for a service owned by another user', async () => {
+    const owner = await user()
+    const intruder = await user()
+    const { service, environment } = await setupProjectAndService(owner.user.id)
+
+    const triggerRes = await request(app)
+      .post('/deployments')
+      .set('Authorization', `Bearer ${owner.token}`)
+      .send({ serviceId: service.id, environmentId: environment.id })
+      .expect(202)
+
+    await request(app)
+      .get(`/deployments?serviceId=${service.id}`)
+      .set('Authorization', `Bearer ${intruder.token}`)
+      .expect(403)
+
+    await request(app)
+      .get(`/deployments/${triggerRes.body.id}`)
+      .set('Authorization', `Bearer ${intruder.token}`)
+      .expect(403)
+
+    await request(app)
+      .post(`/deployments/${triggerRes.body.id}/cancel`)
+      .set('Authorization', `Bearer ${intruder.token}`)
+      .expect(403)
+  })
+
   it('returns 404 canceling a nonexistent deployment', async () => {
     const { token } = await user()
     await request(app)

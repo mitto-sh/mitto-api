@@ -1,12 +1,12 @@
 import { AppError } from '../middleware/error'
 import { deployQueue } from '../queues/deploy'
 import { assertServiceOwner } from '../lib/ownership'
+import { DeploymentStatus, CANCELLABLE_DEPLOYMENT_STATUSES } from '../lib/consts'
 import * as deploymentsRepo from '../repositories/deployments.repository'
 import type { TriggerDeployInput } from '../dto/deployments.dto'
 
-const CANCELLABLE_STATUSES = ['queued', 'building', 'pushing', 'provisioning']
-
-export async function listDeployments(serviceId: string, environmentId?: string) {
+export async function listDeployments(serviceId: string, userId: string, environmentId?: string) {
+  await assertServiceOwner(serviceId, userId)
   return deploymentsRepo.findByService(serviceId, environmentId)
 }
 
@@ -19,7 +19,7 @@ export async function triggerDeploy(userId: string, input: TriggerDeployInput) {
   const deployment = await deploymentsRepo.insert({
     serviceId:     input.serviceId,
     environmentId: input.environmentId,
-    status:        'queued',
+    status:        DeploymentStatus.Queued,
     commitSha:     input.commitSha,
     commitMessage: input.commitMessage,
     triggeredBy:   userId,
@@ -35,19 +35,23 @@ export async function triggerDeploy(userId: string, input: TriggerDeployInput) {
   return deployment
 }
 
-export async function getDeployment(id: string) {
+async function getOwnedDeployment(id: string, userId: string) {
   const deployment = await deploymentsRepo.findById(id)
   if (!deployment) throw new AppError(404, 'Deployment not found')
+  await assertServiceOwner(deployment.serviceId, userId)
   return deployment
 }
 
-export async function cancelDeployment(id: string) {
-  const deployment = await deploymentsRepo.findById(id)
-  if (!deployment) throw new AppError(404, 'Deployment not found')
+export async function getDeployment(id: string, userId: string) {
+  return getOwnedDeployment(id, userId)
+}
 
-  if (!CANCELLABLE_STATUSES.includes(deployment.status)) {
+export async function cancelDeployment(id: string, userId: string) {
+  const deployment = await getOwnedDeployment(id, userId)
+
+  if (!CANCELLABLE_DEPLOYMENT_STATUSES.includes(deployment.status)) {
     throw new AppError(400, `Cannot cancel a deployment with status: ${deployment.status}`)
   }
 
-  return deploymentsRepo.update(deployment.id, { status: 'cancelled', finishedAt: new Date() })
+  return deploymentsRepo.update(deployment.id, { status: DeploymentStatus.Cancelled, finishedAt: new Date() })
 }
