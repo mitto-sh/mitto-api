@@ -3,7 +3,7 @@ import { app } from './app'
 import { env } from './config/env'
 
 app.listen(env.PORT, () => {
-  console.log(`🚀 mitto-api running on port ${env.PORT} [${env.NODE_ENV}]`)
+  console.log(`mitto-api running on port ${env.PORT} [${env.NODE_ENV}]`)
 })
 
 export default app

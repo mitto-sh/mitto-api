@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { env } from '../config/env'
-import { db, users, eq } from '../lib/db'
+import * as usersRepo from '../repositories/users.repository'
 
 export interface AuthRequest extends Request {
   user?: {
@@ -23,11 +23,7 @@ export async function requireAuth(req: AuthRequest, res: Response, next: NextFun
   try {
     const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string }
 
-    const [user] = await db
-      .select({ id: users.id, email: users.email, plan: users.plan })
-      .from(users)
-      .where(eq(users.id, payload.sub))
-      .limit(1)
+    const user = await usersRepo.findAuthProfileById(payload.sub)
 
     if (!user) {
       return res.status(401).json({ error: 'User not found' })
