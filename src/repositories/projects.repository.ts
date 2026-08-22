@@ -6,6 +6,15 @@ export async function findById(id: string) {
   return project
 }
 
+export async function findBySlugForOwner(slug: string, ownerId: string) {
+  const [project] = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.slug, slug), eq(projects.ownerId, ownerId)))
+    .limit(1)
+  return project
+}
+
 export async function findByOwner(ownerId: string) {
   return db.select().from(projects).where(eq(projects.ownerId, ownerId))
 }

@@ -17,6 +17,10 @@ export async function get(req: AuthRequest, res: Response) {
   res.json(await projectsUsecase.getProject(param(req.params.id), req.user!.id))
 }
 
+export async function getBySlug(req: AuthRequest, res: Response) {
+  res.json(await projectsUsecase.getProjectBySlug(param(req.params.slug), req.user!.id))
+}
+
 export async function update(req: AuthRequest, res: Response) {
   const body = updateProjectSchema.parse(req.body)
   res.json(await projectsUsecase.updateProject(param(req.params.id), req.user!.id, body))

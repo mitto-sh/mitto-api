@@ -81,6 +81,45 @@ describe('projects routes', () => {
     expect(detail.body.services).toEqual([])
   })
 
+  it('gets a project by slug with its services', async () => {
+    const { token } = await user()
+
+    const created = await request(app)
+      .post('/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Slug App' })
+      .expect(201)
+
+    const detail = await request(app)
+      .get(`/projects/by-slug/${created.body.slug}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+
+    expect(detail.body.id).toBe(created.body.id)
+    expect(detail.body.services).toEqual([])
+  })
+
+  it('returns 404 getting a project by slug that does not exist or belongs to another user', async () => {
+    const owner = await user()
+    const intruder = await user()
+
+    await request(app)
+      .post('/projects')
+      .set('Authorization', `Bearer ${owner.token}`)
+      .send({ name: 'Someone Elses App' })
+      .expect(201)
+
+    await request(app)
+      .get('/projects/by-slug/nonexistent-slug')
+      .set('Authorization', `Bearer ${owner.token}`)
+      .expect(404)
+
+    await request(app)
+      .get('/projects/by-slug/someone-elses-app')
+      .set('Authorization', `Bearer ${intruder.token}`)
+      .expect(404)
+  })
+
   it('returns 404 for a nonexistent project', async () => {
     const { token } = await user()
     await request(app)

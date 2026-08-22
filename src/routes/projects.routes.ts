@@ -5,9 +5,10 @@ import * as controller from '@/controllers/projects.controller'
 
 const router = Router()
 
-router.get('/',       requireAuth, asyncHandler(controller.list))
-router.post('/',      requireAuth, asyncHandler(controller.create))
-router.get('/:id',    requireAuth, asyncHandler(controller.get))
+router.get('/',              requireAuth, asyncHandler(controller.list))
+router.post('/',             requireAuth, asyncHandler(controller.create))
+router.get('/by-slug/:slug', requireAuth, asyncHandler(controller.getBySlug))
+router.get('/:id',           requireAuth, asyncHandler(controller.get))
 router.patch('/:id',  requireAuth, asyncHandler(controller.update))
 router.delete('/:id', requireAuth, asyncHandler(controller.remove))
 

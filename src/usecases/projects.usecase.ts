@@ -39,6 +39,13 @@ export async function getProject(id: string, userId: string) {
   return { ...project, services }
 }
 
+export async function getProjectBySlug(slug: string, userId: string) {
+  const project = await projectsRepo.findBySlugForOwner(slug, userId)
+  if (!project) throw new AppError(404, 'Project not found')
+  const services = await servicesRepo.findByProject(project.id)
+  return { ...project, services }
+}
+
 export async function updateProject(id: string, userId: string, input: UpdateProjectInput) {
   const project = await assertProjectOwner(id, userId)
 
