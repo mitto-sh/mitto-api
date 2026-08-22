@@ -1,9 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { env } from '../config/env'
-import { db } from '../db'
-import { users } from '../db/schema'
-import { eq } from 'drizzle-orm'
+import { db, users, eq } from '../lib/db'
 
 export interface AuthRequest extends Request {
   user?: {

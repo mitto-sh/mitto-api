@@ -1,10 +1,8 @@
 import { describe, it, expect, vi, afterEach, afterAll } from 'vitest'
 import request from 'supertest'
 import jwt from 'jsonwebtoken'
-import { eq } from 'drizzle-orm'
 import { createApp } from '../../src/app'
-import { db } from '../../src/db'
-import { users } from '../../src/db/schema'
+import { db, users, eq } from '../../src/lib/db'
 import { createTestUser } from '../helpers/testUser'
 import { env } from '../../src/config/env'
 

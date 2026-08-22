@@ -21,8 +21,17 @@ Handles: projects, services, deployments, environment variables, custom domains,
 cp .env.example .env
 docker compose up -d postgres redis
 npm install
-npm run db:migrate
 npm run dev
+```
+
+Schema, migrations and seed data live in a separate package,
+[mitto-lib-ts-orm](../mitto-lib-ts-orm) — `mitto-api` consumes it as a `file:` dependency and does
+not run migrations/seed itself. First time setup, or after a schema change there:
+```bash
+cd ../mitto-lib-ts-orm
+npm install && npm run build && npm run db:migrate   # + npm run db:seed if you want local data
+cd ../mitto-api
+npm install   # picks up the rebuilt dependency
 ```
 
 ## Testing

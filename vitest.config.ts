@@ -11,8 +11,7 @@ export default defineConfig({
       reporter: ['text', 'html'],
       include: ['src/**/*.ts'],
       exclude: [
-        'src/db/schema.ts',
-        'src/db/migrate.ts',
+        'src/lib/db.ts',
         'src/index.ts',
       ],
       thresholds: {

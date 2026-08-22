@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import jwt from 'jsonwebtoken'
-import { eq } from 'drizzle-orm'
-import { db } from '../../src/db'
-import { users } from '../../src/db/schema'
+import { db, users, eq } from '../../src/lib/db'
 import { env } from '../../src/config/env'
 import { requireAuth, generateToken, type AuthRequest } from '../../src/middleware/auth'
 

@@ -1,9 +1,7 @@
 import { describe, it, expect, afterAll } from 'vitest'
 import request from 'supertest'
-import { eq } from 'drizzle-orm'
 import { createApp } from '../../src/app'
-import { db } from '../../src/db'
-import { users, projects, services, environments } from '../../src/db/schema'
+import { db, users, projects, services, environments, eq } from '../../src/lib/db'
 import { createTestUser } from '../helpers/testUser'
 
 const app = createApp()
