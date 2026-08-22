@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import jwt from 'jsonwebtoken'
-import { db, users, eq } from '../../src/lib/db'
-import { env } from '../../src/config/env'
-import { requireAuth, generateToken, type AuthRequest } from '../../src/middleware/auth'
+import { db, users, eq } from '@/lib/db'
+import { env } from '@/config/env'
+import { requireAuth, generateToken, type AuthRequest } from '@/middleware/auth'
 
 function mockRes() {
   const res: any = {}

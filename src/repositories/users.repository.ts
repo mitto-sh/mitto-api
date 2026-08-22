@@ -1,4 +1,4 @@
-import { db, users, eq } from '../lib/db'
+import { db, users, eq } from '@/lib/db'
 
 export async function findById(id: string) {
   const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1)

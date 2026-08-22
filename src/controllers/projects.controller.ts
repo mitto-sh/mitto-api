@@ -1,8 +1,8 @@
 import { Response } from 'express'
-import { AuthRequest } from '../middleware/auth'
-import { param } from '../lib/params'
-import { createProjectSchema, updateProjectSchema } from '../dto/projects.dto'
-import * as projectsUsecase from '../usecases/projects.usecase'
+import { AuthRequest } from '@/middleware/auth'
+import { param } from '@/lib/params'
+import { createProjectSchema, updateProjectSchema } from '@/dto/projects.dto'
+import * as projectsUsecase from '@/usecases/projects.usecase'
 
 export async function list(req: AuthRequest, res: Response) {
   res.json(await projectsUsecase.listProjects(req.user!.id))

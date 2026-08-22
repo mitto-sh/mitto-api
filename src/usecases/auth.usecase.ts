@@ -1,6 +1,6 @@
-import { env } from '../config/env'
-import { generateToken } from '../middleware/auth'
-import * as usersRepo from '../repositories/users.repository'
+import { env } from '@/config/env'
+import { generateToken } from '@/middleware/auth'
+import * as usersRepo from '@/repositories/users.repository'
 
 export function getGithubAuthorizeUrl(): string {
   const params = new URLSearchParams({

@@ -1,8 +1,8 @@
 import { Response } from 'express'
-import { AuthRequest } from '../middleware/auth'
-import { param, requireQueryParam } from '../lib/params'
-import { upsertEnvVarSchema } from '../dto/envVars.dto'
-import * as envVarsUsecase from '../usecases/envVars.usecase'
+import { AuthRequest } from '@/middleware/auth'
+import { param, requireQueryParam } from '@/lib/params'
+import { upsertEnvVarSchema } from '@/dto/envVars.dto'
+import * as envVarsUsecase from '@/usecases/envVars.usecase'
 
 export async function list(req: AuthRequest, res: Response) {
   const serviceId = param(req.params.serviceId)

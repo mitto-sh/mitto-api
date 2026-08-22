@@ -1,7 +1,7 @@
-import { AppError } from '../middleware/error'
-import { assertProjectOwner } from '../lib/ownership'
-import * as servicesRepo from '../repositories/services.repository'
-import type { CreateServiceInput, UpdateServiceInput } from '../dto/services.dto'
+import { AppError } from '@/middleware/error'
+import { assertProjectOwner } from '@/usecases/ownership.usecase'
+import * as servicesRepo from '@/repositories/services.repository'
+import type { CreateServiceInput, UpdateServiceInput } from '@/dto/services.dto'
 
 async function getOwnedService(id: string, userId: string) {
   const service = await servicesRepo.findById(id)

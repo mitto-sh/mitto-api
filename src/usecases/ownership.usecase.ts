@@ -1,6 +1,6 @@
-import { AppError } from '../middleware/error'
-import * as projectsRepo from '../repositories/projects.repository'
-import * as servicesRepo from '../repositories/services.repository'
+import { AppError } from '@/middleware/error'
+import * as projectsRepo from '@/repositories/projects.repository'
+import * as servicesRepo from '@/repositories/services.repository'
 
 export async function assertProjectOwner(projectId: string, userId: string) {
   const project = await projectsRepo.findById(projectId)

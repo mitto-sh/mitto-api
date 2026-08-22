@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, afterAll, afterEach } from 'vitest'
 import request from 'supertest'
 import jwt from 'jsonwebtoken'
-import { createApp } from '../../src/app'
-import { db, users, githubInstallations, eq } from '../../src/lib/db'
+import { createApp } from '@/app'
+import { db, users, githubInstallations, eq } from '@/lib/db'
 import { createTestUser } from '../helpers/testUser'
-import { env } from '../../src/config/env'
+import { env } from '@/config/env'
 
-vi.mock('../../src/lib/githubApp', () => ({
+vi.mock('@/clients/githubApp', () => ({
   installUrl: vi.fn(() => 'https://github.com/apps/mitto-sh-dev/installations/new'),
   getInstallationDetails: vi.fn(),
   getInstallationAccessToken: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock('../../src/lib/githubApp', () => ({
   fetchRepoFile: vi.fn(),
 }))
 
-import * as githubApp from '../../src/lib/githubApp'
+import * as githubApp from '@/clients/githubApp'
 
 const app = createApp()
 

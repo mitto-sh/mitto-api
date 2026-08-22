@@ -1,8 +1,8 @@
 import { Response } from 'express'
-import { AuthRequest } from '../middleware/auth'
-import { param, requireQueryParam } from '../lib/params'
-import { createEnvironmentSchema, updateEnvironmentSchema } from '../dto/environments.dto'
-import * as environmentsUsecase from '../usecases/environments.usecase'
+import { AuthRequest } from '@/middleware/auth'
+import { param, requireQueryParam } from '@/lib/params'
+import { createEnvironmentSchema, updateEnvironmentSchema } from '@/dto/environments.dto'
+import * as environmentsUsecase from '@/usecases/environments.usecase'
 
 export async function list(req: AuthRequest, res: Response) {
   const projectId = requireQueryParam(req.query, 'projectId')

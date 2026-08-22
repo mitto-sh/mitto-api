@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
-import { AuthRequest } from '../middleware/auth'
-import { param } from '../lib/params'
-import { env } from '../config/env'
-import * as githubUsecase from '../usecases/github.usecase'
+import { AuthRequest } from '@/middleware/auth'
+import { param } from '@/lib/params'
+import { env } from '@/config/env'
+import * as githubUsecase from '@/usecases/github.usecase'
 
 export function getInstallUrl(req: AuthRequest, res: Response) {
   res.json({ url: githubUsecase.getInstallUrl(req.user!.id) })

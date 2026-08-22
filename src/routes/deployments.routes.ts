@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import { requireAuth } from '../middleware/auth'
-import { asyncHandler } from '../lib/asyncHandler'
-import * as controller from '../controllers/deployments.controller'
+import { requireAuth } from '@/middleware/auth'
+import { asyncHandler } from '@/lib/asyncHandler'
+import * as controller from '@/controllers/deployments.controller'
 
 const router = Router()
 

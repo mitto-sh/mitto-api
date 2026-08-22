@@ -1,5 +1,5 @@
 import { Queue } from 'bullmq'
-import { env } from '../config/env'
+import { env } from '@/config/env'
 
 export interface DeployJobData {
   deploymentId:  string

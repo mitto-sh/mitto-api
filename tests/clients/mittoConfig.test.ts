@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { parseMittoConfig } from '../../src/lib/mittoConfig'
-import { MITTO_CONFIG_FILENAME } from '../../src/lib/consts'
+import { parseMittoConfig } from '@/clients/mittoConfig'
+import { MITTO_CONFIG_FILENAME } from '@/lib/consts'
 
 describe('parseMittoConfig', () => {
   it('has the expected config filename', () => {

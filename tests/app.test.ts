@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import request from 'supertest'
-import { createApp } from '../src/app'
+import { createApp } from '@/app'
 
 const app = createApp()
 

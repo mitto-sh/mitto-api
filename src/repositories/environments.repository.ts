@@ -1,5 +1,5 @@
-import { db, environments, eq, and, ne, asc, desc, sql } from '../lib/db'
-import type { NewEnvironment } from '../lib/db'
+import { db, environments, eq, and, ne, asc, desc, sql } from '@/lib/db'
+import type { NewEnvironment } from '@/lib/db'
 
 export async function findById(id: string) {
   const [environment] = await db.select().from(environments).where(eq(environments.id, id)).limit(1)

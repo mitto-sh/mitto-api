@@ -1,5 +1,5 @@
 import { describe, it, expect, afterAll } from 'vitest'
-import { deployQueue } from '../../src/queues/deploy'
+import { deployQueue } from '@/queues/deploy'
 
 describe('deployQueue', () => {
   afterAll(async () => {

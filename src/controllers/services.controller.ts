@@ -1,8 +1,8 @@
 import { Response } from 'express'
-import { AuthRequest } from '../middleware/auth'
-import { param } from '../lib/params'
-import { createServiceSchema, updateServiceSchema } from '../dto/services.dto'
-import * as servicesUsecase from '../usecases/services.usecase'
+import { AuthRequest } from '@/middleware/auth'
+import { param } from '@/lib/params'
+import { createServiceSchema, updateServiceSchema } from '@/dto/services.dto'
+import * as servicesUsecase from '@/usecases/services.usecase'
 
 export async function create(req: AuthRequest, res: Response) {
   const body = createServiceSchema.parse(req.body)

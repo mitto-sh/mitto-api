@@ -1,16 +1,16 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
-import { env } from './config/env'
-import { errorHandler, notFound } from './middleware/error'
+import { env } from '@/config/env'
+import { errorHandler, notFound } from '@/middleware/error'
 
-import authRoutes        from './routes/auth.routes'
-import projectsRoutes    from './routes/projects.routes'
-import servicesRoutes    from './routes/services.routes'
-import deploymentsRoutes from './routes/deployments.routes'
-import envVarsRoutes     from './routes/envVars.routes'
-import githubRoutes      from './routes/github.routes'
-import environmentsRoutes from './routes/environments.routes'
+import authRoutes        from '@/routes/auth.routes'
+import projectsRoutes    from '@/routes/projects.routes'
+import servicesRoutes    from '@/routes/services.routes'
+import deploymentsRoutes from '@/routes/deployments.routes'
+import envVarsRoutes     from '@/routes/envVars.routes'
+import githubRoutes      from '@/routes/github.routes'
+import environmentsRoutes from '@/routes/environments.routes'
 
 export function createApp() {
   const app = express()

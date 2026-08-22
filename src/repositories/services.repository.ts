@@ -1,5 +1,5 @@
-import { db, services, eq } from '../lib/db'
-import type { NewService } from '../lib/db'
+import { db, services, eq } from '@/lib/db'
+import type { NewService } from '@/lib/db'
 
 export async function findById(id: string) {
   const [service] = await db.select().from(services).where(eq(services.id, id)).limit(1)

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { asyncHandler } from '../../src/lib/asyncHandler'
+import { asyncHandler } from '@/lib/asyncHandler'
 
 describe('asyncHandler', () => {
   it('calls through to the wrapped handler on success', async () => {

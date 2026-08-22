@@ -1,5 +1,5 @@
-import { db, projects, environments, eq, and } from '../lib/db'
-import type { NewProject, Project } from '../lib/db'
+import { db, projects, environments, eq, and } from '@/lib/db'
+import type { NewProject, Project } from '@/lib/db'
 
 export async function findById(id: string) {
   const [project] = await db.select().from(projects).where(eq(projects.id, id)).limit(1)

@@ -1,8 +1,8 @@
 import { Response } from 'express'
-import { AuthRequest } from '../middleware/auth'
-import { param, requireQueryParam } from '../lib/params'
-import { triggerDeploySchema } from '../dto/deployments.dto'
-import * as deploymentsUsecase from '../usecases/deployments.usecase'
+import { AuthRequest } from '@/middleware/auth'
+import { param, requireQueryParam } from '@/lib/params'
+import { triggerDeploySchema } from '@/dto/deployments.dto'
+import * as deploymentsUsecase from '@/usecases/deployments.usecase'
 
 export async function list(req: AuthRequest, res: Response) {
   const serviceId = requireQueryParam(req.query, 'serviceId')

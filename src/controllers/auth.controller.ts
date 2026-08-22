@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
-import { AuthRequest } from '../middleware/auth'
-import { env } from '../config/env'
-import * as authUsecase from '../usecases/auth.usecase'
+import { AuthRequest } from '@/middleware/auth'
+import { env } from '@/config/env'
+import * as authUsecase from '@/usecases/auth.usecase'
 
 function redirectToLoginError(res: Response, error: string) {
   res.redirect(`${env.DASHBOARD_URL}/login?error=${error}`)

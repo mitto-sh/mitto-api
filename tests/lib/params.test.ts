@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { param } from '../../src/lib/params'
+import { param } from '@/lib/params'
 
 describe('param', () => {
   it('returns the string unchanged', () => {

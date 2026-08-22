@@ -1,5 +1,5 @@
-import { db, environmentVariables, eq, and, sql } from '../lib/db'
-import type { NewEnvVar } from '../lib/db'
+import { db, environmentVariables, eq, and, sql } from '@/lib/db'
+import type { NewEnvVar } from '@/lib/db'
 
 export async function findByServiceAndEnvironment(serviceId: string, environmentId: string) {
   return db

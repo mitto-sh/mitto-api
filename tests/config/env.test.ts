@@ -24,7 +24,7 @@ describe('env config', () => {
     delete process.env.PLATFORM_DOMAIN
     delete process.env.PORT
     delete process.env.REDIS_URL
-    const { env } = await import('../../src/config/env')
+    const { env } = await import('@/config/env')
 
     expect(env.NODE_ENV).toBe('test')
     expect(env.PORT).toBe(4000)
@@ -45,7 +45,7 @@ describe('env config', () => {
     })
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    await expect(import('../../src/config/env')).rejects.toThrow('process.exit called')
+    await expect(import('@/config/env')).rejects.toThrow('process.exit called')
     expect(exitSpy).toHaveBeenCalledWith(1)
 
     exitSpy.mockRestore()

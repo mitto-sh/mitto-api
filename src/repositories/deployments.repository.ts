@@ -1,5 +1,5 @@
-import { db, deployments, eq, and, desc } from '../lib/db'
-import type { NewDeployment } from '../lib/db'
+import { db, deployments, eq, and, desc } from '@/lib/db'
+import type { NewDeployment } from '@/lib/db'
 
 export async function findById(id: string) {
   const [deployment] = await db.select().from(deployments).where(eq(deployments.id, id)).limit(1)

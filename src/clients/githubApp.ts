@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs'
 import jwt from 'jsonwebtoken'
-import { env } from '../config/env'
-import { AppError } from '../middleware/error'
+import { env } from '@/config/env'
+import { AppError } from '@/middleware/error'
 
 export interface GithubAppConfig {
   appId: string

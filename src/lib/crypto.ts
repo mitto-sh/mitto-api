@@ -1,6 +1,6 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto'
-import { env } from '../config/env'
-import { CRYPTO_ALGORITHM, CRYPTO_IV_LENGTH, CRYPTO_KEY_LENGTH } from './consts'
+import { env } from '@/config/env'
+import { CRYPTO_ALGORITHM, CRYPTO_IV_LENGTH, CRYPTO_KEY_LENGTH } from '@/lib/consts'
 
 const key = scryptSync(env.ENCRYPTION_KEY, 'mitto-salt', CRYPTO_KEY_LENGTH)
 

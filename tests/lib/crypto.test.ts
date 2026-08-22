@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { encrypt, decrypt } from '../../src/lib/crypto'
+import { encrypt, decrypt } from '@/lib/crypto'
 
 describe('crypto', () => {
   it('round-trips plaintext through encrypt/decrypt', () => {

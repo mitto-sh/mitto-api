@@ -9,7 +9,7 @@ const mockEnv: Record<string, string | undefined> = {
   GITHUB_APP_PRIVATE_KEY_PATH: undefined,
 }
 
-vi.mock('../../src/config/env', () => ({
+vi.mock('@/config/env', () => ({
   get env() {
     return mockEnv
   },
@@ -53,13 +53,13 @@ afterEach(() => {
 
 describe('githubApp', () => {
   it('throws a 501 AppError when the GitHub App is not configured', async () => {
-    const { getGithubAppConfig } = await import('../../src/lib/githubApp')
+    const { getGithubAppConfig } = await import('@/clients/githubApp')
     expect(() => getGithubAppConfig()).toThrow('GitHub App is not configured')
   })
 
   it('builds the installation URL from the configured slug', async () => {
     configureApp()
-    const { installUrl } = await import('../../src/lib/githubApp')
+    const { installUrl } = await import('@/clients/githubApp')
     expect(installUrl()).toBe('https://github.com/apps/mitto-sh-dev/installations/new')
   })
 
@@ -70,7 +70,7 @@ describe('githubApp', () => {
     )
     vi.stubGlobal('fetch', fetchMock)
 
-    const { getInstallationDetails } = await import('../../src/lib/githubApp')
+    const { getInstallationDetails } = await import('@/clients/githubApp')
     const details = await getInstallationDetails('999')
 
     expect(details.account?.login).toBe('acme')
@@ -83,7 +83,7 @@ describe('githubApp', () => {
     configureApp()
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(404, {})))
 
-    const { getInstallationDetails } = await import('../../src/lib/githubApp')
+    const { getInstallationDetails } = await import('@/clients/githubApp')
     await expect(getInstallationDetails('999')).rejects.toThrow('GitHub App API request failed')
   })
 
@@ -91,7 +91,7 @@ describe('githubApp', () => {
     configureApp()
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(201, { token: 'ghs_abc123' })))
 
-    const { getInstallationAccessToken } = await import('../../src/lib/githubApp')
+    const { getInstallationAccessToken } = await import('@/clients/githubApp')
     expect(await getInstallationAccessToken('999')).toBe('ghs_abc123')
   })
 
@@ -108,7 +108,7 @@ describe('githubApp', () => {
       .mockResolvedValueOnce(jsonResponse(200, { repositories: page2 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { listInstallationRepos } = await import('../../src/lib/githubApp')
+    const { listInstallationRepos } = await import('@/clients/githubApp')
     const repos = await listInstallationRepos('999')
 
     expect(repos).toHaveLength(101)
@@ -123,7 +123,7 @@ describe('githubApp', () => {
       .mockResolvedValueOnce(jsonResponse(200, { content, encoding: 'base64' }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { fetchRepoFile } = await import('../../src/lib/githubApp')
+    const { fetchRepoFile } = await import('@/clients/githubApp')
     const result = await fetchRepoFile('999', 'acme', 'web', 'mitto.yaml')
     expect(result).toContain('name: web')
   })
@@ -135,7 +135,7 @@ describe('githubApp', () => {
       .mockResolvedValueOnce(jsonResponse(404, {}))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { fetchRepoFile } = await import('../../src/lib/githubApp')
+    const { fetchRepoFile } = await import('@/clients/githubApp')
     expect(await fetchRepoFile('999', 'acme', 'web', 'mitto.yaml')).toBeNull()
   })
 })

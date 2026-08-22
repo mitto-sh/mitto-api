@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ZodError, z } from 'zod'
-import { AppError, errorHandler, notFound } from '../../src/middleware/error'
+import { AppError, errorHandler, notFound } from '@/middleware/error'
 
 function mockRes() {
   const res: any = {}

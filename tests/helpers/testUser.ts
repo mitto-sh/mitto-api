@@ -1,5 +1,5 @@
-import { db, users } from '../../src/lib/db'
-import { generateToken } from '../../src/middleware/auth'
+import { db, users } from '@/lib/db'
+import { generateToken } from '@/middleware/auth'
 
 let counter = 0
 

@@ -1,6 +1,10 @@
 node_modules/
 dist/
 build/
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+src/**/*.d.ts.map
 .env
 .env.local
 *.pem

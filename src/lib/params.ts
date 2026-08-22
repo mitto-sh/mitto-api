@@ -1,4 +1,4 @@
-import { AppError } from '../middleware/error'
+import { AppError } from '@/middleware/error'
 
 export function param(value: string | string[]): string {
   if (Array.isArray(value)) return value[0]!

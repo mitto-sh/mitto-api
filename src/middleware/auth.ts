@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-import { env } from '../config/env'
-import * as usersRepo from '../repositories/users.repository'
+import { env } from '@/config/env'
+import * as usersRepo from '@/repositories/users.repository'
 
 export interface AuthRequest extends Request {
   user?: {

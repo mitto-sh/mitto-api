@@ -1,15 +1,15 @@
 import jwt from 'jsonwebtoken'
-import { env } from '../config/env'
-import { AppError } from '../middleware/error'
+import { env } from '@/config/env'
+import { AppError } from '@/middleware/error'
 import {
   installUrl,
   getInstallationDetails,
   listInstallationRepos,
   fetchRepoFile,
-} from '../lib/githubApp'
-import { parseMittoConfig } from '../lib/mittoConfig'
-import { MITTO_CONFIG_FILENAME, GITHUB_INSTALL_STATE_TTL } from '../lib/consts'
-import * as githubInstallationsRepo from '../repositories/githubInstallations.repository'
+} from '@/clients/githubApp'
+import { parseMittoConfig } from '@/clients/mittoConfig'
+import { MITTO_CONFIG_FILENAME, GITHUB_INSTALL_STATE_TTL } from '@/lib/consts'
+import * as githubInstallationsRepo from '@/repositories/githubInstallations.repository'
 
 export function getInstallUrl(userId: string): string {
   const state = jwt.sign({ sub: userId }, env.JWT_SECRET, { expiresIn: GITHUB_INSTALL_STATE_TTL })

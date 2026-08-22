@@ -1,8 +1,8 @@
-import { AppError } from '../middleware/error'
-import { slugify } from '../lib/slug'
-import { assertProjectOwner } from '../lib/ownership'
-import * as environmentsRepo from '../repositories/environments.repository'
-import type { CreateEnvironmentInput, UpdateEnvironmentInput } from '../dto/environments.dto'
+import { AppError } from '@/middleware/error'
+import { slugify } from '@/lib/slug'
+import { assertProjectOwner } from '@/usecases/ownership.usecase'
+import * as environmentsRepo from '@/repositories/environments.repository'
+import type { CreateEnvironmentInput, UpdateEnvironmentInput } from '@/dto/environments.dto'
 
 async function assertSlugAvailable(projectId: string, slug: string, excludeEnvironmentId?: string) {
   const existing = await environmentsRepo.findBySlugInProject(projectId, slug)

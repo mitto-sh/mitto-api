@@ -1,7 +1,7 @@
-import { encrypt, decrypt } from '../lib/crypto'
-import { assertServiceOwner } from '../lib/ownership'
-import * as envVarsRepo from '../repositories/envVars.repository'
-import type { UpsertEnvVarInput } from '../dto/envVars.dto'
+import { encrypt, decrypt } from '@/lib/crypto'
+import { assertServiceOwner } from '@/usecases/ownership.usecase'
+import * as envVarsRepo from '@/repositories/envVars.repository'
+import type { UpsertEnvVarInput } from '@/dto/envVars.dto'
 
 export async function listEnvVars(serviceId: string, environmentId: string, userId: string) {
   await assertServiceOwner(serviceId, userId)

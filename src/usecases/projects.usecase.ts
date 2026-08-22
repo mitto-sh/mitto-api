@@ -1,10 +1,10 @@
-import { AppError } from '../middleware/error'
-import { slugify } from '../lib/slug'
-import { assertProjectOwner } from '../lib/ownership'
-import * as projectsRepo from '../repositories/projects.repository'
-import * as servicesRepo from '../repositories/services.repository'
-import type { NewProject } from '../lib/db'
-import type { CreateProjectInput, UpdateProjectInput } from '../dto/projects.dto'
+import { AppError } from '@/middleware/error'
+import { slugify } from '@/lib/slug'
+import { assertProjectOwner } from '@/usecases/ownership.usecase'
+import * as projectsRepo from '@/repositories/projects.repository'
+import * as servicesRepo from '@/repositories/services.repository'
+import type { NewProject } from '@/lib/db'
+import type { CreateProjectInput, UpdateProjectInput } from '@/dto/projects.dto'
 
 async function assertSlugAvailable(
   slug: string,

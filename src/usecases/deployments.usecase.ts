@@ -1,9 +1,9 @@
-import { AppError } from '../middleware/error'
-import { deployQueue } from '../queues/deploy'
-import { assertServiceOwner } from '../lib/ownership'
-import { DeploymentStatus, CANCELLABLE_DEPLOYMENT_STATUSES } from '../lib/consts'
-import * as deploymentsRepo from '../repositories/deployments.repository'
-import type { TriggerDeployInput } from '../dto/deployments.dto'
+import { AppError } from '@/middleware/error'
+import { deployQueue } from '@/queues/deploy'
+import { assertServiceOwner } from '@/usecases/ownership.usecase'
+import { DeploymentStatus, CANCELLABLE_DEPLOYMENT_STATUSES } from '@/lib/consts'
+import * as deploymentsRepo from '@/repositories/deployments.repository'
+import type { TriggerDeployInput } from '@/dto/deployments.dto'
 
 export async function listDeployments(serviceId: string, userId: string, environmentId?: string) {
   await assertServiceOwner(serviceId, userId)

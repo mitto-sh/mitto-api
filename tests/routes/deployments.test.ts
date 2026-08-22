@@ -1,9 +1,9 @@
 import { describe, it, expect, afterAll } from 'vitest'
 import request from 'supertest'
-import { createApp } from '../../src/app'
-import { db, users, projects, services, environments, eq } from '../../src/lib/db'
+import { createApp } from '@/app'
+import { db, users, projects, services, environments, eq } from '@/lib/db'
 import { createTestUser } from '../helpers/testUser'
-import { deployQueue } from '../../src/queues/deploy'
+import { deployQueue } from '@/queues/deploy'
 
 const app = createApp()
 

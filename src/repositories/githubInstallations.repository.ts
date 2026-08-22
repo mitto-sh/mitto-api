@@ -1,4 +1,4 @@
-import { db, githubInstallations, eq, and } from '../lib/db'
+import { db, githubInstallations, eq, and } from '@/lib/db'
 
 export async function findByUser(userId: string) {
   return db.select().from(githubInstallations).where(eq(githubInstallations.userId, userId))
