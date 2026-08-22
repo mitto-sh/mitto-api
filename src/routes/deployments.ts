@@ -1,11 +1,12 @@
 import { Router, Response } from 'express'
 import { z } from 'zod'
-import { db, deployments, services, projects, eq, and, desc } from '../lib/db'
+import { db, deployments, eq, and, desc } from '../lib/db'
 import { requireAuth, AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/error'
 import { deployQueue } from '../queues/deploy'
-import { param } from '../lib/params'
+import { param, requireQueryParam } from '../lib/params'
 import { asyncHandler } from '../lib/asyncHandler'
+import { assertServiceOwner } from '../lib/ownership'
 
 const router = Router()
 
@@ -17,11 +18,8 @@ const triggerDeploySchema = z.object({
 })
 
 router.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { serviceId, environmentId } = req.query
-
-  if (!serviceId || typeof serviceId !== 'string') {
-    throw new AppError(400, 'serviceId query param is required')
-  }
+  const serviceId = requireQueryParam(req.query, 'serviceId')
+  const { environmentId } = req.query
 
   const rows = await db
     .select()
@@ -40,22 +38,9 @@ router.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response
 router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const body = triggerDeploySchema.parse(req.body)
 
-  const [service] = await db
-    .select()
-    .from(services)
-    .where(eq(services.id, body.serviceId))
-    .limit(1)
+  const { service, project } = await assertServiceOwner(body.serviceId, req.user!.id)
 
-  if (!service) throw new AppError(404, 'Service not found')
   if (!service.enabled) throw new AppError(423, 'Service is disabled — enable it before deploying')
-
-  const [project] = await db
-    .select()
-    .from(projects)
-    .where(eq(projects.id, service.projectId))
-    .limit(1)
-
-  if (project?.ownerId !== req.user!.id) throw new AppError(403, 'Forbidden')
   if (!project.enabled) throw new AppError(423, 'Project is disabled — enable it before deploying')
 
   const [deployment] = await db

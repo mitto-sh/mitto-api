@@ -1,10 +1,12 @@
 import { Router, Response } from 'express'
 import { z } from 'zod'
-import { db, environments, projects, eq, and, asc, desc, ne, sql } from '../lib/db'
+import { db, environments, eq, and, asc, desc, ne, sql } from '../lib/db'
 import { requireAuth, AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/error'
-import { param } from '../lib/params'
+import { param, requireQueryParam } from '../lib/params'
 import { asyncHandler } from '../lib/asyncHandler'
+import { assertProjectOwner } from '../lib/ownership'
+import { slugify } from '../lib/slug'
 
 const router = Router()
 
@@ -16,17 +18,6 @@ const createEnvironmentSchema = z.object({
 const updateEnvironmentSchema = z.object({
   name: z.string().min(1).max(64),
 })
-
-function slugify(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-}
-
-async function assertProjectOwner(projectId: string, userId: string) {
-  const [project] = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1)
-  if (!project) throw new AppError(404, 'Project not found')
-  if (project.ownerId !== userId) throw new AppError(403, 'Forbidden')
-  return project
-}
 
 async function assertSlugAvailable(projectId: string, slug: string, excludeEnvironmentId?: string) {
   const existing = await db
@@ -41,11 +32,7 @@ async function assertSlugAvailable(projectId: string, slug: string, excludeEnvir
 }
 
 router.get('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { projectId } = req.query
-
-  if (!projectId || typeof projectId !== 'string') {
-    throw new AppError(400, 'projectId query param is required')
-  }
+  const projectId = requireQueryParam(req.query, 'projectId')
 
   await assertProjectOwner(projectId, req.user!.id)
 

@@ -1,11 +1,11 @@
 import { Router, Response } from 'express'
 import { z } from 'zod'
-import { db, environmentVariables, services, projects, eq, and, sql } from '../lib/db'
+import { db, environmentVariables, eq, and, sql } from '../lib/db'
 import { requireAuth, AuthRequest } from '../middleware/auth'
-import { AppError } from '../middleware/error'
 import { encrypt, decrypt } from '../lib/crypto'
-import { param } from '../lib/params'
+import { param, requireQueryParam } from '../lib/params'
 import { asyncHandler } from '../lib/asyncHandler'
+import { assertServiceOwner } from '../lib/ownership'
 
 const router = Router()
 
@@ -18,23 +18,9 @@ const upsertEnvVarSchema = z.object({
   })).min(1),
 })
 
-async function assertServiceOwner(serviceId: string, userId: string) {
-  const [service] = await db.select().from(services).where(eq(services.id, serviceId)).limit(1)
-  if (!service) throw new AppError(404, 'Service not found')
-
-  const [project] = await db.select().from(projects).where(eq(projects.id, service.projectId)).limit(1)
-  if (project?.ownerId !== userId) throw new AppError(403, 'Forbidden')
-
-  return service
-}
-
 router.get('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const serviceId = param(req.params.serviceId)
-  const { environmentId } = req.query
-
-  if (!environmentId || typeof environmentId !== 'string') {
-    throw new AppError(400, 'environmentId query param is required')
-  }
+  const environmentId = requireQueryParam(req.query, 'environmentId')
 
   await assertServiceOwner(serviceId, req.user!.id)
 
@@ -86,11 +72,7 @@ router.put('/:serviceId', requireAuth, asyncHandler(async (req: AuthRequest, res
 router.delete('/:serviceId/:key', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const serviceId = param(req.params.serviceId)
   const key = param(req.params.key)
-  const { environmentId } = req.query
-
-  if (!environmentId || typeof environmentId !== 'string') {
-    throw new AppError(400, 'environmentId query param is required')
-  }
+  const environmentId = requireQueryParam(req.query, 'environmentId')
 
   await assertServiceOwner(serviceId, req.user!.id)
 

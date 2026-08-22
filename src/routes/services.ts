@@ -1,10 +1,11 @@
 import { Router, Response } from 'express'
 import { z } from 'zod'
-import { db, services, projects, eq } from '../lib/db'
+import { db, services, eq } from '../lib/db'
 import { requireAuth, AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/error'
 import { param } from '../lib/params'
 import { asyncHandler } from '../lib/asyncHandler'
+import { assertProjectOwner } from '../lib/ownership'
 
 const router = Router()
 
@@ -31,13 +32,6 @@ const createServiceSchema = z.object({
 const updateServiceSchema = z.object({
   enabled: z.boolean().optional(),
 })
-
-async function assertProjectOwner(projectId: string, userId: string) {
-  const [project] = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1)
-  if (!project) throw new AppError(404, 'Project not found')
-  if (project.ownerId !== userId) throw new AppError(403, 'Forbidden')
-  return project
-}
 
 router.post('/', requireAuth, asyncHandler(async (req: AuthRequest, res: Response) => {
   const body = createServiceSchema.parse(req.body)

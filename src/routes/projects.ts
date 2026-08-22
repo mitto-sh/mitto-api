@@ -5,6 +5,7 @@ import { requireAuth, AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/error'
 import { param } from '../lib/params'
 import { asyncHandler } from '../lib/asyncHandler'
+import { slugify } from '../lib/slug'
 
 const router = Router()
 
@@ -19,10 +20,6 @@ const updateProjectSchema = z.object({
   isPrivate: z.boolean().optional(),
   enabled:   z.boolean().optional(),
 })
-
-function slugify(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-}
 
 async function assertSlugAvailable(slug: string, orgId: string | null, ownerId: string, excludeProjectId?: string) {
   const existing = await db
