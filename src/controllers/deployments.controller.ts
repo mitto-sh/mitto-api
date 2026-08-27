@@ -26,3 +26,7 @@ export async function get(req: AuthRequest, res: Response) {
 export async function cancel(req: AuthRequest, res: Response) {
   res.json(await deploymentsUsecase.cancelDeployment(param(req.params.id), req.user!.id))
 }
+
+export async function logsToken(req: AuthRequest, res: Response) {
+  res.json(await deploymentsUsecase.getLogsToken(param(req.params.id), req.user!.id))
+}

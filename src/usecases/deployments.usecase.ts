@@ -1,7 +1,9 @@
+import jwt from 'jsonwebtoken'
 import { AppError } from '@/middleware/error'
 import { deployQueue } from '@/queues/deploy'
 import { assertServiceOwner } from '@/usecases/ownership.usecase'
 import { DeploymentStatus, CANCELLABLE_DEPLOYMENT_STATUSES } from '@/lib/consts'
+import { env } from '@/config/env'
 import * as deploymentsRepo from '@/repositories/deployments.repository'
 import type { TriggerDeployInput } from '@/dto/deployments.dto'
 
@@ -44,6 +46,12 @@ async function getOwnedDeployment(id: string, userId: string) {
 
 export async function getDeployment(id: string, userId: string) {
   return getOwnedDeployment(id, userId)
+}
+
+export async function getLogsToken(id: string, userId: string) {
+  const deployment = await getOwnedDeployment(id, userId)
+  const token = jwt.sign({ sub: userId, deploymentId: deployment.id }, env.JWT_SECRET, { expiresIn: '5m' })
+  return { token }
 }
 
 export async function cancelDeployment(id: string, userId: string) {

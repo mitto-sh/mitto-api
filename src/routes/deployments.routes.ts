@@ -9,5 +9,6 @@ router.get('/',            requireAuth, asyncHandler(controller.list))
 router.post('/',           requireAuth, asyncHandler(controller.trigger))
 router.get('/:id',         requireAuth, asyncHandler(controller.get))
 router.post('/:id/cancel', requireAuth, asyncHandler(controller.cancel))
+router.get('/:id/logs-token', requireAuth, asyncHandler(controller.logsToken))
 
 export default router

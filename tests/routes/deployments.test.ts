@@ -131,6 +131,45 @@ describe('deployments routes', () => {
     expect(cancelRes.body.status).toBe('cancelled')
   })
 
+  it('issues a deployment-scoped logs token', async () => {
+    const { user: u, token } = await user()
+    const { service, environment } = await setupProjectAndService(u.id)
+
+    const triggerRes = await request(app)
+      .post('/deployments')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ serviceId: service.id, environmentId: environment.id })
+      .expect(202)
+
+    const res = await request(app)
+      .get(`/deployments/${triggerRes.body.id}/logs-token`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+
+    const jwt = await import('jsonwebtoken')
+    const { env } = await import('@/config/env')
+    const payload = jwt.default.verify(res.body.token, env.JWT_SECRET) as { sub: string; deploymentId: string }
+    expect(payload.sub).toBe(u.id)
+    expect(payload.deploymentId).toBe(triggerRes.body.id)
+  })
+
+  it('rejects a logs token request for a deployment owned by another user', async () => {
+    const owner = await user()
+    const intruder = await user()
+    const { service, environment } = await setupProjectAndService(owner.user.id)
+
+    const triggerRes = await request(app)
+      .post('/deployments')
+      .set('Authorization', `Bearer ${owner.token}`)
+      .send({ serviceId: service.id, environmentId: environment.id })
+      .expect(202)
+
+    await request(app)
+      .get(`/deployments/${triggerRes.body.id}/logs-token`)
+      .set('Authorization', `Bearer ${intruder.token}`)
+      .expect(403)
+  })
+
   it('rejects listing, getting, and canceling deployments for a service owned by another user', async () => {
     const owner = await user()
     const intruder = await user()
