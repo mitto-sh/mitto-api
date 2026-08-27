@@ -189,6 +189,7 @@ describe('services routes', () => {
       .send({ enabled: false })
       .expect(200)
     expect(disabled.body.enabled).toBe(false)
+    expect(disabled.body.teardownStatus).toBe('tearing_down')
 
     const reenabled = await request(app)
       .patch(`/services/${created.body.id}`)

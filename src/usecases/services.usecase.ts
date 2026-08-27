@@ -1,6 +1,7 @@
 import { AppError } from '@/middleware/error'
 import { assertProjectOwner } from '@/usecases/ownership.usecase'
 import * as servicesRepo from '@/repositories/services.repository'
+import { serviceTeardownQueue } from '@/queues/serviceTeardown'
 import type { CreateServiceInput, UpdateServiceInput } from '@/dto/services.dto'
 
 async function getOwnedService(id: string, userId: string) {
@@ -20,8 +21,19 @@ export async function getService(id: string, userId: string) {
 }
 
 export async function updateService(id: string, userId: string, input: UpdateServiceInput) {
-  await getOwnedService(id, userId)
-  return servicesRepo.update(id, input)
+  const service = await getOwnedService(id, userId)
+
+  const isDisabling = input.enabled === false && service.enabled === true
+  const updated = await servicesRepo.update(id, {
+    ...input,
+    ...(isDisabling ? { teardownStatus: 'tearing_down' } : {}),
+  })
+
+  if (isDisabling) {
+    await serviceTeardownQueue.add('teardown', { serviceId: id })
+  }
+
+  return updated
 }
 
 export async function deleteService(id: string, userId: string) {
