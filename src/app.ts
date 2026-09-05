@@ -11,6 +11,8 @@ import deploymentsRoutes from '@/routes/deployments.routes'
 import envVarsRoutes     from '@/routes/envVars.routes'
 import githubRoutes      from '@/routes/github.routes'
 import environmentsRoutes from '@/routes/environments.routes'
+import accountRoutes     from '@/routes/account.routes'
+import agentRoutes       from '@/routes/agent.routes'
 
 export function createApp() {
   const app = express()
@@ -30,6 +32,8 @@ export function createApp() {
   app.use('/env',         envVarsRoutes)
   app.use('/github',      githubRoutes)
   app.use('/environments', environmentsRoutes)
+  app.use('/account',     accountRoutes)
+  app.use('/agent',       agentRoutes)
 
   app.use(notFound)
   app.use(errorHandler)
